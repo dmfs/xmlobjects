@@ -25,6 +25,7 @@ import org.dmfs.xmlobjects.XmlElementDescriptor;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
 import org.dmfs.xmlobjects.pull.android.AndroidParserContext;
+import org.dmfs.xmlobjects.pull.android.ResolveInt;
 import org.dmfs.xmlobjects.pull.builder.reflection.ReflectionObjectBuilder;
 
 import android.content.res.Resources;
@@ -82,11 +83,12 @@ public class ReflectionResourceAttributeObjectBuilder<T> extends ReflectionObjec
 			}
 			else if (field.getType() == int.class || field.getType() == Integer.class)
 			{
+				ResolveInt resolveInt;
 				if (res == 0)
 				{
 					resultValue = p.getAttributeIntValue(namespace, name, 0);
 				}
-				else if (resources != null)
+				else if (resources != null && ((resolveInt = field.getAnnotation(ResolveInt.class)) == null || resolveInt.value()))
 				{
 					try
 					{
@@ -99,7 +101,7 @@ public class ReflectionResourceAttributeObjectBuilder<T> extends ReflectionObjec
 				}
 				else
 				{
-					// special case, return the resource id if there are no resources
+					// special case, return the resource id if there are no resources or we shall not resolve the integer
 					resultValue = res;
 				}
 			}
