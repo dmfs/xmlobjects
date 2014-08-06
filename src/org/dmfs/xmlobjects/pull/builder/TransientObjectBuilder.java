@@ -18,13 +18,14 @@
 package org.dmfs.xmlobjects.pull.builder;
 
 import org.dmfs.xmlobjects.XmlElementDescriptor;
+import org.dmfs.xmlobjects.pull.IXmlObjectBuilder;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
 
 
 /**
- * A builder that just returns one of its child elements. It always returns the last child with the given {@link XmlElementDescriptor}. It's handy in cases like
- * this, when the parent element can have only one child element of a specific type:
+ * A builder that just returns one of its child elements. It always returns the last child with the given {@link XmlElementDescriptor} or
+ * {@link IXmlObjectBuilder}. It's handy in cases like this, when the parent element can have only one child element of a specific type:
  * 
  * <pre>
  * &lt;location>&lt;href>http://example.com&lt;/href>&lt;/location>
@@ -40,10 +41,20 @@ public class TransientObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 	 */
 	private final XmlElementDescriptor<T> mChildDescriptor;
 
+	private final IXmlObjectBuilder<T> mChildBuilder;
+
 
 	public TransientObjectBuilder(XmlElementDescriptor<T> childDescriptor)
 	{
 		mChildDescriptor = childDescriptor;
+		mChildBuilder = null;
+	}
+
+
+	public TransientObjectBuilder(IXmlObjectBuilder<T> childBuilder)
+	{
+		mChildDescriptor = null;
+		mChildBuilder = childBuilder;
 	}
 
 
@@ -52,7 +63,7 @@ public class TransientObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 	public <V> T update(XmlElementDescriptor<T> descriptor, T object, XmlElementDescriptor<V> childDescriptor, V child, ParserContext context)
 		throws XmlObjectPullParserException
 	{
-		if (childDescriptor == mChildDescriptor)
+		if (childDescriptor == mChildDescriptor || mChildDescriptor == null && childDescriptor != null && mChildBuilder == childDescriptor.builder)
 		{
 			return (T) child;
 		}

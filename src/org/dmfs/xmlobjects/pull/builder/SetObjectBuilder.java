@@ -21,13 +21,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.dmfs.xmlobjects.XmlElementDescriptor;
+import org.dmfs.xmlobjects.pull.IXmlObjectBuilder;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
 
 
 /**
- * A builder for sets of elements. All child elements must be of the same type and have the same {@link XmlElementDescriptor}. Child elements with different
- * types will be ignored.
+ * A builder for sets of elements. All child elements must be of the same type and have the same {@link XmlElementDescriptor} or the same
+ * {@link IXmlObjectBuilder}. Child elements with different types will be ignored.
  * <p>
  * Example:
  * </p>
@@ -47,6 +48,7 @@ public class SetObjectBuilder<T> extends AbstractXmlObjectBuilder<Set<T>>
 	private final static int DEFAULT_INITIAL_CAPACITY = 16;
 
 	private final XmlElementDescriptor<T> mSetElementDescriptor;
+	private final IXmlObjectBuilder<T> mSetElementBuilder;
 
 	private final int mInitialCapacity;
 
@@ -54,6 +56,7 @@ public class SetObjectBuilder<T> extends AbstractXmlObjectBuilder<Set<T>>
 	public SetObjectBuilder(XmlElementDescriptor<T> setElementDescriptor)
 	{
 		mSetElementDescriptor = setElementDescriptor;
+		mSetElementBuilder = null;
 		mInitialCapacity = DEFAULT_INITIAL_CAPACITY;
 	}
 
@@ -61,6 +64,23 @@ public class SetObjectBuilder<T> extends AbstractXmlObjectBuilder<Set<T>>
 	public SetObjectBuilder(XmlElementDescriptor<T> setElementDescriptor, int initialCapacity)
 	{
 		mSetElementDescriptor = setElementDescriptor;
+		mSetElementBuilder = null;
+		mInitialCapacity = initialCapacity;
+	}
+
+
+	public SetObjectBuilder(IXmlObjectBuilder<T> setElementBuilder)
+	{
+		mSetElementDescriptor = null;
+		mSetElementBuilder = setElementBuilder;
+		mInitialCapacity = DEFAULT_INITIAL_CAPACITY;
+	}
+
+
+	public SetObjectBuilder(IXmlObjectBuilder<T> setElementBuilder, int initialCapacity)
+	{
+		mSetElementDescriptor = null;
+		mSetElementBuilder = setElementBuilder;
 		mInitialCapacity = initialCapacity;
 	}
 
@@ -85,7 +105,8 @@ public class SetObjectBuilder<T> extends AbstractXmlObjectBuilder<Set<T>>
 	public <V> Set<T> update(XmlElementDescriptor<Set<T>> descriptor, Set<T> object, XmlElementDescriptor<V> childDescriptor, V child, ParserContext context)
 		throws XmlObjectPullParserException
 	{
-		if (childDescriptor == mSetElementDescriptor)
+		if (childDescriptor == mSetElementDescriptor || mSetElementDescriptor == null && childDescriptor != null
+			&& mSetElementBuilder == childDescriptor.builder)
 		{
 			object.add((T) child);
 		}

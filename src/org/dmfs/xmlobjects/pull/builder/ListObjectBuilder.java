@@ -21,13 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.dmfs.xmlobjects.XmlElementDescriptor;
+import org.dmfs.xmlobjects.pull.IXmlObjectBuilder;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
 
 
 /**
- * A builder for lists of elements. All child elements must be of the same type and have the same {@link XmlElementDescriptor}. Child elements with different
- * types will be ignored.
+ * A builder for lists of elements. All child elements must be of the same type and have the same {@link XmlElementDescriptor} or the same
+ * {@link IXmlObjectBuilder}. Child elements with different types will be ignored.
  * <p>
  * Example:
  * </p>
@@ -47,6 +48,7 @@ public class ListObjectBuilder<T> extends AbstractXmlObjectBuilder<List<T>>
 	private final static int DEFAULT_INITIAL_CAPACITY = 16;
 
 	private final XmlElementDescriptor<T> mListElementDescriptor;
+	private final IXmlObjectBuilder<T> mListElementBuilder;
 
 	private final int mInitialCapacity;
 
@@ -54,6 +56,7 @@ public class ListObjectBuilder<T> extends AbstractXmlObjectBuilder<List<T>>
 	public ListObjectBuilder(XmlElementDescriptor<T> listElementDescriptor)
 	{
 		mListElementDescriptor = listElementDescriptor;
+		mListElementBuilder = null;
 		mInitialCapacity = DEFAULT_INITIAL_CAPACITY;
 	}
 
@@ -61,6 +64,23 @@ public class ListObjectBuilder<T> extends AbstractXmlObjectBuilder<List<T>>
 	public ListObjectBuilder(XmlElementDescriptor<T> listElementDescriptor, int initialCapacity)
 	{
 		mListElementDescriptor = listElementDescriptor;
+		mListElementBuilder = null;
+		mInitialCapacity = initialCapacity;
+	}
+
+
+	public ListObjectBuilder(IXmlObjectBuilder<T> listElementBuilder)
+	{
+		mListElementDescriptor = null;
+		mListElementBuilder = listElementBuilder;
+		mInitialCapacity = DEFAULT_INITIAL_CAPACITY;
+	}
+
+
+	public ListObjectBuilder(IXmlObjectBuilder<T> listElementBuilder, int initialCapacity)
+	{
+		mListElementDescriptor = null;
+		mListElementBuilder = listElementBuilder;
 		mInitialCapacity = initialCapacity;
 	}
 
@@ -87,7 +107,8 @@ public class ListObjectBuilder<T> extends AbstractXmlObjectBuilder<List<T>>
 	public <V> List<T> update(XmlElementDescriptor<List<T>> descriptor, List<T> object, XmlElementDescriptor<V> childDescriptor, V child, ParserContext context)
 		throws XmlObjectPullParserException
 	{
-		if (childDescriptor == mListElementDescriptor)
+		if (childDescriptor == mListElementDescriptor || mListElementDescriptor == null && childDescriptor != null
+			&& mListElementBuilder == childDescriptor.builder)
 		{
 			object.add((T) child);
 		}
