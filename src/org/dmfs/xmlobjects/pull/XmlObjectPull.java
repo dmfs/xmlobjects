@@ -165,9 +165,10 @@ public class XmlObjectPull
 				{
 					if (currentDepth < ignoreDepth)
 					{
-						currentClass = XmlElementDescriptor.get(QualifiedName.get(parser.getNamespace(), parser.getName()), mContext);
-						if (currentClass != null)
+						XmlElementDescriptor<?> nextClass = XmlElementDescriptor.get(QualifiedName.get(parser.getNamespace(), parser.getName()), mContext);
+						if (nextClass != null)
 						{
+							currentClass = nextClass;
 							if (returnOnStartTag && type == currentClass && path.matches(currentPath))
 							{
 								return null;
