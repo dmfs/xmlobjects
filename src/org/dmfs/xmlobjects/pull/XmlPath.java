@@ -27,7 +27,7 @@ import org.dmfs.xmlobjects.XmlElementDescriptor;
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
-public class XmlPath
+public class XmlPath implements Cloneable
 {
 	public LinkedList<XmlElementDescriptor<?>> mPathElements;
 
@@ -45,9 +45,29 @@ public class XmlPath
 	}
 
 
+	@SuppressWarnings("unchecked")
+	private XmlPath(XmlPath path)
+	{
+		mPathElements = (LinkedList<XmlElementDescriptor<?>>) path.mPathElements.clone();
+	}
+
+
 	public boolean matches(XmlPath path)
 	{
 		return mPathElements.equals(path.mPathElements);
+	}
+
+
+	public XmlPath clone()
+	{
+		return new XmlPath(this);
+	}
+
+
+	public int length()
+	{
+		// TODO: check if this is inefficient and we need to optimize
+		return mPathElements.size();
 	}
 
 
@@ -60,6 +80,12 @@ public class XmlPath
 	XmlElementDescriptor<?> peek()
 	{
 		return mPathElements.peek();
+	}
+
+
+	XmlElementDescriptor<?> peekLast()
+	{
+		return mPathElements.peekLast();
 	}
 
 
