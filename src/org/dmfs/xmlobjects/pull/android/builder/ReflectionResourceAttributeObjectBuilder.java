@@ -65,7 +65,7 @@ public class ReflectionResourceAttributeObjectBuilder<T> extends ReflectionObjec
 		if (field != null)
 		{
 			final String name = attribute.name;
-			final String namespace = attribute.namespace.length() == 0 ? null : attribute.namespace;
+			final String namespace = attribute.namespace;
 
 			Object resultValue = null;
 			int res = p.getAttributeResourceValue(namespace, name, 0 /* the invalid resource id */);

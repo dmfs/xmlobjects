@@ -30,11 +30,6 @@ import java.util.Map;
 public final class QualifiedName
 {
 	/**
-	 * The default namespace of qualified names if no namespace is given. It is the empty namespace.
-	 */
-	public final static String DEFAULT_NAMESPACE = "";
-
-	/**
 	 * A cache of all known {@link QualifiedName}s. This is a map of namespaces to a map of names (in the respective name space) to the {@link QualifiedName}
 	 * object.
 	 */
@@ -66,7 +61,7 @@ public final class QualifiedName
 	 */
 	public static QualifiedName get(String name)
 	{
-		return get(DEFAULT_NAMESPACE, name);
+		return get(null, name);
 	}
 
 
@@ -82,9 +77,9 @@ public final class QualifiedName
 	 */
 	public static QualifiedName get(String namespace, String name)
 	{
-		if (namespace == null)
+		if (namespace != null && namespace.length() == 0)
 		{
-			namespace = DEFAULT_NAMESPACE;
+			namespace = null;
 		}
 
 		synchronized (QUALIFIED_NAME_CACHE)
@@ -130,7 +125,7 @@ public final class QualifiedName
 		this.namespace = namespace;
 		this.name = name;
 
-		mHashCode = namespace.hashCode() * 31 + name.hashCode();
+		mHashCode = namespace == null ? name.hashCode() : namespace.hashCode() * 31 + name.hashCode();
 	}
 
 
@@ -151,6 +146,6 @@ public final class QualifiedName
 	@Override
 	public String toString()
 	{
-		return namespace + ":" + name;
+		return namespace == null ? name : namespace + ":" + name;
 	}
 }

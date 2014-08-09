@@ -21,6 +21,7 @@ import java.lang.ref.WeakReference;
 import java.util.Map;
 
 import org.dmfs.xmlobjects.pull.IXmlObjectBuilder;
+import org.dmfs.xmlobjects.serializer.IXmlObjectSerializer;
 
 
 /**
@@ -50,6 +51,11 @@ public final class XmlElementDescriptor<T>
 	 * An {@link IXmlObjectBuilder} for elements of this type.
 	 */
 	public final IXmlObjectBuilder<T> builder;
+
+	/**
+	 * An {@link IXmlObjectSerializer} for elements of this type.
+	 */
+	public final IXmlObjectSerializer<T> serializer;
 
 	/**
 	 * An {@link IXmlObjectBuilder} for child elements that have no {@link XmlElementDescriptor}. This may be <code>null</code> to ignore these child elements.
@@ -97,13 +103,19 @@ public final class XmlElementDescriptor<T>
 
 	public static <T> XmlElementDescriptor<T> register(QualifiedName qname, IXmlObjectBuilder<T> builder)
 	{
-		return register(qname, builder, null, DEFAULT_CONTEXT);
+		return register(qname, builder, null, null, DEFAULT_CONTEXT);
+	}
+
+
+	public static <T> XmlElementDescriptor<T> register(QualifiedName qname, IXmlObjectBuilder<T> builder, IXmlObjectSerializer<T> serializer)
+	{
+		return register(qname, builder, null, serializer, DEFAULT_CONTEXT);
 	}
 
 
 	public static <T> XmlElementDescriptor<T> register(QualifiedName qname, IXmlObjectBuilder<T> builder, IXmlObjectBuilder<?> anonymousChildrenBuilder)
 	{
-		return register(qname, builder, anonymousChildrenBuilder, DEFAULT_CONTEXT);
+		return register(qname, builder, anonymousChildrenBuilder, null, DEFAULT_CONTEXT);
 	}
 
 
@@ -113,9 +125,15 @@ public final class XmlElementDescriptor<T>
 	}
 
 
+	public static <T> XmlElementDescriptor<T> register(QualifiedName qname, IXmlObjectBuilder<T> builder, IXmlObjectSerializer<T> serializer, XmlContext context)
+	{
+		return register(qname, builder, null, serializer, context);
+	}
+
+
 	@SuppressWarnings("unchecked")
 	public static <T> XmlElementDescriptor<T> register(QualifiedName qname, IXmlObjectBuilder<T> builder, IXmlObjectBuilder<?> anonymousChildrenBuilder,
-		XmlContext context)
+		IXmlObjectSerializer<T> serializer, XmlContext context)
 	{
 		if (context == null)
 		{
@@ -132,7 +150,7 @@ public final class XmlElementDescriptor<T>
 				throw new IllegalStateException("descriptor for " + qname + " already exists, use 'overload' to override the definition");
 			}
 
-			descriptor = new XmlElementDescriptor<T>(qname, builder, anonymousChildrenBuilder, context);
+			descriptor = new XmlElementDescriptor<T>(qname, builder, anonymousChildrenBuilder, serializer, context);
 			descriptorMap.put(qname, descriptor);
 			return (XmlElementDescriptor<T>) descriptor;
 		}
@@ -141,12 +159,19 @@ public final class XmlElementDescriptor<T>
 
 	public static <T> XmlElementDescriptor<T> overload(XmlElementDescriptor<? super T> oldDescriptor, IXmlObjectBuilder<T> builder)
 	{
-		return overload(oldDescriptor, builder, null);
+		return overload(oldDescriptor, builder, null, null);
 	}
 
 
 	public static <T> XmlElementDescriptor<T> overload(XmlElementDescriptor<? super T> oldDescriptor, IXmlObjectBuilder<T> builder,
-		IXmlObjectBuilder<?> anonymousChildrenBuilder)
+		IXmlObjectSerializer<T> serializer)
+	{
+		return overload(oldDescriptor, builder, null, serializer);
+	}
+
+
+	public static <T> XmlElementDescriptor<T> overload(XmlElementDescriptor<? super T> oldDescriptor, IXmlObjectBuilder<T> builder,
+		IXmlObjectBuilder<?> anonymousChildrenBuilder, IXmlObjectSerializer<T> serializer)
 	{
 		XmlContext context = oldDescriptor.context.get();
 		if (context == null)
@@ -158,14 +183,15 @@ public final class XmlElementDescriptor<T>
 		{
 			Map<QualifiedName, XmlElementDescriptor<?>> descriptorMap = context.DESCRIPTOR_MAP;
 			QualifiedName qname = oldDescriptor.qualifiedName;
-			XmlElementDescriptor<T> descriptor = new XmlElementDescriptor<T>(qname, builder, anonymousChildrenBuilder, context);
+			XmlElementDescriptor<T> descriptor = new XmlElementDescriptor<T>(qname, builder, anonymousChildrenBuilder, serializer, context);
 			descriptorMap.put(qname, descriptor);
 			return descriptor;
 		}
 	}
 
 
-	private XmlElementDescriptor(QualifiedName qname, IXmlObjectBuilder<T> builder, IXmlObjectBuilder<?> anonymousChildrenBuilder, XmlContext context)
+	private XmlElementDescriptor(QualifiedName qname, IXmlObjectBuilder<T> builder, IXmlObjectBuilder<?> anonymousChildrenBuilder,
+		IXmlObjectSerializer<T> serializer, XmlContext context)
 	{
 		if (qname == null)
 		{
@@ -174,6 +200,7 @@ public final class XmlElementDescriptor<T>
 
 		this.qualifiedName = qname;
 		this.builder = builder;
+		this.serializer = serializer;
 		this.anonymousChildrenBuilder = anonymousChildrenBuilder;
 		this.context = new WeakReference<XmlContext>(context);
 	}
