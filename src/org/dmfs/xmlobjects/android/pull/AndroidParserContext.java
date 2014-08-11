@@ -15,26 +15,36 @@
  * 
  */
 
-package org.dmfs.xmlobjects.pull.android;
+package org.dmfs.xmlobjects.android.pull;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.dmfs.xmlobjects.pull.ParserContext;
+
+import android.content.res.Resources;
 
 
 /**
- * Sets whether an integer value should be resolved as a resource int or not. This has no effect if the annotated field is not an integer or does not contain a
- * resource reference.
+ * A {@link ParserContext} that also stores and returns a {@link Resources} instace to provide it to the builders in order to resolve resource references.
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.FIELD })
-public @interface ResolveInt {
+public class AndroidParserContext extends ParserContext
+{
+	private final Resources mResources;
+
+
+	public AndroidParserContext(Resources resources)
+	{
+		mResources = resources;
+	}
+
 
 	/**
-	 * If <code>true</code> try to resolve integer values as resource.
+	 * Get a {@link Resources} instance.
+	 * 
+	 * @return An instance of {@link Resources}.
 	 */
-	boolean value() default true;
+	public Resources getResources()
+	{
+		return mResources;
+	}
 }

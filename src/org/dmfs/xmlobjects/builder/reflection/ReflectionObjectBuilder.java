@@ -15,8 +15,9 @@
  * 
  */
 
-package org.dmfs.xmlobjects.pull.builder.reflection;
+package org.dmfs.xmlobjects.builder.reflection;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.URI;
@@ -26,13 +27,19 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.dmfs.xmlobjects.QualifiedName;
-import org.dmfs.xmlobjects.XmlElementDescriptor;
+import org.dmfs.xmlobjects.XmlContext;
+import org.dmfs.xmlobjects.ElementDescriptor;
+import org.dmfs.xmlobjects.builder.AbstractObjectBuilder;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.Recyclable;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
-import org.dmfs.xmlobjects.pull.builder.AbstractXmlObjectBuilder;
+import org.dmfs.xmlobjects.serializer.SerializerContext;
+import org.dmfs.xmlobjects.serializer.SerializerException;
+import org.dmfs.xmlobjects.serializer.XmlObjectSerializer.IXmlAttributeWriter;
+import org.dmfs.xmlobjects.serializer.XmlObjectSerializer.IXmlChildWriter;
 
 
 /**
@@ -48,7 +55,7 @@ import org.dmfs.xmlobjects.pull.builder.AbstractXmlObjectBuilder;
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
-public class ReflectionObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
+public class ReflectionObjectBuilder<T> extends AbstractObjectBuilder<T>
 {
 
 	/**
@@ -65,6 +72,11 @@ public class ReflectionObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 	 * A map of all fields that should be populated from a child element.
 	 */
 	protected final Map<QualifiedName, Field> mElementMap = new HashMap<QualifiedName, Field>(8);
+
+	/**
+	 * A map of all fields that should be serialized to a child element.
+	 */
+	protected final List<FieldHolder> mElementList = new ArrayList<FieldHolder>(8);
 
 	/**
 	 * A list of all fields that should be populated from a text.
@@ -90,6 +102,7 @@ public class ReflectionObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 	{
 		Map<QualifiedName, Field> attributeMap = mAttributeMap;
 		Map<QualifiedName, Field> elementMap = mElementMap;
+		List<FieldHolder> elementList = mElementList;
 		List<Field> textList = mTextList;
 		for (Field field : classParam.getDeclaredFields())
 		{
@@ -118,15 +131,15 @@ public class ReflectionObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 						name = field.getName();
 					}
 					elementMap.put(QualifiedName.get(namespace, name), field);
+					elementList.add(new FieldHolder(QualifiedName.get(namespace, name), field));
 				}
-				else
+				
+				Text text = field.getAnnotation(Text.class);
+				if (text != null)
 				{
-					Text text = field.getAnnotation(Text.class);
-					if (text != null)
-					{
-						field.setAccessible(true);
-						textList.add(field);
-					}
+					field.setAccessible(true);
+					textList.add(field);
+					elementList.add(new FieldHolder(null, field));
 				}
 			}
 		}
@@ -135,7 +148,7 @@ public class ReflectionObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 
 
 	@Override
-	public T get(XmlElementDescriptor<T> descriptor, T recycle, ParserContext context) throws XmlObjectPullParserException
+	public T get(ElementDescriptor<T> descriptor, T recycle, ParserContext context) throws XmlObjectPullParserException
 	{
 		if (recycle instanceof Recyclable)
 		{
@@ -162,7 +175,7 @@ public class ReflectionObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 
 
 	@Override
-	public T update(XmlElementDescriptor<T> descriptor, T object, QualifiedName attribute, String value, ParserContext context)
+	public T update(ElementDescriptor<T> descriptor, T object, QualifiedName attribute, String value, ParserContext context)
 		throws XmlObjectPullParserException
 	{
 		Field field = mAttributeMap.get(attribute);
@@ -175,7 +188,7 @@ public class ReflectionObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 
 
 	@Override
-	public T update(XmlElementDescriptor<T> descriptor, T object, String text, ParserContext context) throws XmlObjectPullParserException
+	public T update(ElementDescriptor<T> descriptor, T object, String text, ParserContext context) throws XmlObjectPullParserException
 	{
 		for (Field field : mTextList)
 		{
@@ -187,7 +200,7 @@ public class ReflectionObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <V> T update(XmlElementDescriptor<T> descriptor, T object, XmlElementDescriptor<V> child, V data, ParserContext context)
+	public <V> T update(ElementDescriptor<T> descriptor, T object, ElementDescriptor<V> child, V data, ParserContext context)
 		throws XmlObjectPullParserException
 	{
 		QualifiedName qualifiedName = child.qualifiedName;
@@ -299,4 +312,95 @@ public class ReflectionObjectBuilder<T> extends AbstractXmlObjectBuilder<T>
 			throw new XmlObjectPullParserException("can not parse URI in '" + value + "'", e);
 		}
 	}
+
+
+	@Override
+	public void writeAttributes(ElementDescriptor<T> descriptor, T object, IXmlAttributeWriter attributeWriter, SerializerContext context)
+		throws SerializerException, IOException
+	{
+		for (Entry<QualifiedName, Field> attribute : mAttributeMap.entrySet())
+		{
+			Object value;
+			try
+			{
+				value = attribute.getValue().get(object);
+			}
+			catch (IllegalArgumentException e)
+			{
+				throw new SerializerException("can not read attribute " + attribute.getKey(), e);
+			}
+			catch (IllegalAccessException e)
+			{
+				throw new SerializerException("can not read attribute " + attribute.getKey(), e);
+			}
+
+			if (value != null)
+			{
+				attributeWriter.writeAttribute(attribute.getKey(), value.toString());
+			}
+		}
+	}
+
+
+	@Override
+	public void writeChildren(ElementDescriptor<T> descriptor, T object, IXmlChildWriter childWriter, SerializerContext context) throws SerializerException,
+		IOException
+	{
+		XmlContext xmlContext = context.getXmlContext();
+		for (FieldHolder fieldHolder : mElementList)
+		{
+			Object value;
+			try
+			{
+				value = fieldHolder.field.get(object);
+			}
+			catch (IllegalArgumentException e)
+			{
+				throw new SerializerException("can not read field " + fieldHolder.field.getName(), e);
+			}
+			catch (IllegalAccessException e)
+			{
+				throw new SerializerException("can not read field " + fieldHolder.field.getName(), e);
+			}
+
+			if (fieldHolder.name != null)
+			{
+				@SuppressWarnings("unchecked")
+				ElementDescriptor<Object> childDescriptor = (ElementDescriptor<Object>) ElementDescriptor.get(fieldHolder.name, xmlContext);
+
+				Class<?> fieldType = fieldHolder.field.getType();
+
+				if (Collection.class.isAssignableFrom(fieldType) && !fieldType.isInterface() && !Modifier.isAbstract(fieldType.getModifiers()))
+				{
+					for (Object child : (Collection<?>) value)
+					{
+						childWriter.writeChild(childDescriptor, child);
+					}
+				}
+				else
+				{
+					childWriter.writeChild(childDescriptor, value);
+				}
+			}
+			else if (value != null)
+			{
+				childWriter.writeText(value.toString());
+				;
+			}
+		}
+	}
+
+	private final static class FieldHolder
+	{
+		public final QualifiedName name;
+		public final Field field;
+
+
+		public FieldHolder(QualifiedName name, Field field)
+		{
+			this.name = name;
+			this.field = field;
+		}
+	}
+
 }

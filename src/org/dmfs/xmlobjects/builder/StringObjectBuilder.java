@@ -15,11 +15,16 @@
  * 
  */
 
-package org.dmfs.xmlobjects.pull.builder;
+package org.dmfs.xmlobjects.builder;
 
-import org.dmfs.xmlobjects.XmlElementDescriptor;
+import java.io.IOException;
+
+import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
+import org.dmfs.xmlobjects.serializer.SerializerContext;
+import org.dmfs.xmlobjects.serializer.SerializerException;
+import org.dmfs.xmlobjects.serializer.XmlObjectSerializer.IXmlChildWriter;
 
 
 /**
@@ -31,7 +36,7 @@ import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
-public class StringObjectBuilder extends AbstractXmlObjectBuilder<String>
+public class StringObjectBuilder extends AbstractObjectBuilder<String>
 {
 	/**
 	 * An {@link StringObjectBuilder} instance.
@@ -45,8 +50,16 @@ public class StringObjectBuilder extends AbstractXmlObjectBuilder<String>
 
 
 	@Override
-	public String update(XmlElementDescriptor<String> descriptor, String object, String text, ParserContext context) throws XmlObjectPullParserException
+	public String update(ElementDescriptor<String> descriptor, String object, String text, ParserContext context) throws XmlObjectPullParserException
 	{
 		return text;
+	}
+
+
+	@Override
+	public void writeChildren(ElementDescriptor<String> descriptor, String object, IXmlChildWriter childWriter, SerializerContext context)
+		throws SerializerException, IOException
+	{
+		childWriter.writeText(object);
 	}
 }

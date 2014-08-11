@@ -15,45 +15,31 @@
  * 
  */
 
-package org.dmfs.xmlobjects.pull.builder;
+package org.dmfs.xmlobjects.builder;
 
 import org.dmfs.xmlobjects.QualifiedName;
-import org.dmfs.xmlobjects.XmlElementDescriptor;
+import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
 
 
 /**
- * A builder for elements that are represented by the value of a specific attribute, like so:
+ * A builder for XmlElements that are represented by their name like so:
  * 
  * <pre>
- * &lt;comp name="VEVENT" />
+ * &lt; calendar-report />
  * </pre>
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
-public class StringAttributeObjectBuilder extends AbstractXmlObjectBuilder<String>
+public class QualifiedNameObjectBuilder extends AbstractObjectBuilder<QualifiedName>
 {
-	public final QualifiedName attribute;
-
-
-	public StringAttributeObjectBuilder(QualifiedName attribute)
-	{
-		this.attribute = attribute;
-	}
+	public final static QualifiedNameObjectBuilder INSTANCE = new QualifiedNameObjectBuilder();
 
 
 	@Override
-	public String update(XmlElementDescriptor<String> descriptor, String object, QualifiedName attribute, String value, ParserContext context)
-		throws XmlObjectPullParserException
+	public QualifiedName get(ElementDescriptor<QualifiedName> descriptor, QualifiedName recycle, ParserContext context) throws XmlObjectPullParserException
 	{
-		if (this.attribute == attribute)
-		{
-			return value;
-		}
-		else
-		{
-			return object;
-		}
+		return descriptor.qualifiedName;
 	}
 }

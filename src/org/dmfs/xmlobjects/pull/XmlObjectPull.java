@@ -22,7 +22,8 @@ import java.util.LinkedList;
 
 import org.dmfs.xmlobjects.QualifiedName;
 import org.dmfs.xmlobjects.XmlContext;
-import org.dmfs.xmlobjects.XmlElementDescriptor;
+import org.dmfs.xmlobjects.ElementDescriptor;
+import org.dmfs.xmlobjects.builder.IObjectBuilder;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -43,7 +44,7 @@ public class XmlObjectPull
 	private final XmlPath mCurrentElementDescriptorPath = new XmlPath();
 	private final LinkedList<Object> mObjectStack = new LinkedList<Object>();
 
-	private IXmlObjectBuilder<?> mCurrentBuilder;
+	private IObjectBuilder<?> mCurrentBuilder;
 	private XmlContext mContext;
 	private ParserContext mParserContext;
 
@@ -77,7 +78,7 @@ public class XmlObjectPull
 	 * @throws XmlObjectPullParserException
 	 * @throws IOException
 	 */
-	public <T> boolean moveToNext(XmlElementDescriptor<T> type, XmlPath path) throws XmlPullParserException, XmlObjectPullParserException, IOException
+	public <T> boolean moveToNext(ElementDescriptor<T> type, XmlPath path) throws XmlPullParserException, XmlObjectPullParserException, IOException
 	{
 		pullInternal(type, null, path, true, false);
 		return !isEndOfDocument();
@@ -94,7 +95,7 @@ public class XmlObjectPull
 	 * @throws XmlObjectPullParserException
 	 * @throws IOException
 	 */
-	public <T> boolean moveToNextSibling(XmlElementDescriptor<T> type, XmlPath path) throws XmlPullParserException, XmlObjectPullParserException, IOException
+	public <T> boolean moveToNextSibling(ElementDescriptor<T> type, XmlPath path) throws XmlPullParserException, XmlObjectPullParserException, IOException
 	{
 		return pullInternal(type, null, path, true, true) != null || mParser.getDepth() == path.length() + 1;
 	}
@@ -125,13 +126,13 @@ public class XmlObjectPull
 
 
 	/**
-	 * Returns an {@link XmlElementDescriptor} for the current element.
+	 * Returns an {@link ElementDescriptor} for the current element.
 	 * 
-	 * @return The {@link XmlElementDescriptor} that will be used to build an object for this element.
+	 * @return The {@link ElementDescriptor} that will be used to build an object for this element.
 	 */
-	public XmlElementDescriptor<?> getCurrentElementDescriptor()
+	public ElementDescriptor<?> getCurrentElementDescriptor()
 	{
-		return XmlElementDescriptor.get(getCurrentElementQualifiedName(), mContext);
+		return ElementDescriptor.get(getCurrentElementQualifiedName(), mContext);
 	}
 
 
@@ -146,17 +147,17 @@ public class XmlObjectPull
 	 * @throws IOException
 	 * @throws XmlObjectPullParserException
 	 */
-	public <T> T pull(XmlElementDescriptor<T> type, T recycle, XmlPath path) throws XmlPullParserException, IOException, XmlObjectPullParserException
+	public <T> T pull(ElementDescriptor<T> type, T recycle, XmlPath path) throws XmlPullParserException, IOException, XmlObjectPullParserException
 	{
 		return pullInternal(type, recycle, path, false, false);
 	}
 
 
 	@SuppressWarnings("unchecked")
-	private <T, U, V> T pullInternal(XmlElementDescriptor<T> type, T recycle, XmlPath path, boolean stopOnStartTag, boolean stopOnLeaveSubTree)
+	private <T, U, V> T pullInternal(ElementDescriptor<T> type, T recycle, XmlPath path, boolean stopOnStartTag, boolean stopOnLeaveSubTree)
 		throws XmlPullParserException, IOException, XmlObjectPullParserException
 	{
-		if (type.getContext() != mContext && type.getContext() != XmlElementDescriptor.DEFAULT_CONTEXT)
+		if (type.getContext() != mContext && type.getContext() != ElementDescriptor.DEFAULT_CONTEXT)
 		{
 			throw new IllegalArgumentException("type is from an invalid context");
 		}
@@ -164,10 +165,10 @@ public class XmlObjectPull
 		// cache some fields locally
 		ParserContext parserContext = mParserContext;
 		XmlPullParser parser = mParser;
-		IXmlObjectBuilder<?> currentBuilder = mCurrentBuilder;
+		IObjectBuilder<?> currentBuilder = mCurrentBuilder;
 		XmlPath currentPath = mCurrentElementDescriptorPath;
 		LinkedList<Object> objectStack = mObjectStack;
-		XmlElementDescriptor<?> currentElementDescriptor = mCurrentElementDescriptorPath.peek();
+		ElementDescriptor<?> currentElementDescriptor = mCurrentElementDescriptorPath.peek();
 
 		// we ignore all elements below this depth
 		int ignoreDepth = Integer.MAX_VALUE;
@@ -188,7 +189,7 @@ public class XmlObjectPull
 				{
 					if (currentDepth < ignoreDepth)
 					{
-						XmlElementDescriptor<?> nextClass = XmlElementDescriptor.get(QualifiedName.get(parser.getNamespace(), parser.getName()), mContext);
+						ElementDescriptor<?> nextClass = ElementDescriptor.get(QualifiedName.get(parser.getNamespace(), parser.getName()), mContext);
 						if (nextClass != null)
 						{
 							currentElementDescriptor = nextClass;
@@ -204,7 +205,7 @@ public class XmlObjectPull
 							}
 
 							currentBuilder = mCurrentBuilder = currentElementDescriptor.builder;
-							currentObject = ((IXmlObjectBuilder<V>) currentBuilder).get((XmlElementDescriptor<V>) currentElementDescriptor, (V) recycled,
+							currentObject = ((IObjectBuilder<V>) currentBuilder).get((ElementDescriptor<V>) currentElementDescriptor, (V) recycled,
 								parserContext);
 
 							recycled = null;
@@ -212,7 +213,7 @@ public class XmlObjectPull
 							// pass all attributes to the builder
 							for (int i = 0, count = parser.getAttributeCount(); i < count; ++i)
 							{
-								currentObject = ((IXmlObjectBuilder<V>) currentBuilder).update((XmlElementDescriptor<V>) currentElementDescriptor,
+								currentObject = ((IObjectBuilder<V>) currentBuilder).update((ElementDescriptor<V>) currentElementDescriptor,
 									(V) currentObject, QualifiedName.get(parser.getAttributeNamespace(i), parser.getAttributeName(i)),
 									parser.getAttributeValue(i), parserContext);
 							}
@@ -238,9 +239,9 @@ public class XmlObjectPull
 						}
 
 						// finalize the current object, which now becomes the child object of it's parent
-						V childObject = ((IXmlObjectBuilder<V>) currentBuilder).finish((XmlElementDescriptor<V>) currentElementDescriptor, (V) currentObject,
+						V childObject = ((IObjectBuilder<V>) currentBuilder).finish((ElementDescriptor<V>) currentElementDescriptor, (V) currentObject,
 							parserContext);
-						XmlElementDescriptor<V> childClass = (XmlElementDescriptor<V>) currentElementDescriptor;
+						ElementDescriptor<V> childClass = (ElementDescriptor<V>) currentElementDescriptor;
 
 						// remove child from the stack
 						currentPath.pop();
@@ -262,7 +263,7 @@ public class XmlObjectPull
 						}
 						else
 						{
-							currentObject = ((IXmlObjectBuilder<U>) currentBuilder).update((XmlElementDescriptor<U>) currentElementDescriptor,
+							currentObject = ((IObjectBuilder<U>) currentBuilder).update((ElementDescriptor<U>) currentElementDescriptor,
 								(U) currentObject, childClass, childObject, parserContext);
 						}
 					}
@@ -278,7 +279,7 @@ public class XmlObjectPull
 					if (currentDepth < ignoreDepth)
 					{
 						// update current object with text value
-						currentObject = ((IXmlObjectBuilder<V>) currentBuilder).update((XmlElementDescriptor<V>) currentElementDescriptor, (V) currentObject,
+						currentObject = ((IObjectBuilder<V>) currentBuilder).update((ElementDescriptor<V>) currentElementDescriptor, (V) currentObject,
 							parser.getText(), parserContext);
 					}
 					break;

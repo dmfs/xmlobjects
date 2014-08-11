@@ -18,6 +18,7 @@
 package org.dmfs.xmlobjects.serializer;
 
 /**
+ * Thrown when an unrecoverable issue occurred during serialization of an object.
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */

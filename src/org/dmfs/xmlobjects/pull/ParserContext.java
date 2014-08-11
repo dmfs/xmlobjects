@@ -20,13 +20,14 @@ package org.dmfs.xmlobjects.pull;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.dmfs.xmlobjects.XmlElementDescriptor;
-import org.dmfs.xmlobjects.pull.android.AndroidParserContext;
+import org.dmfs.xmlobjects.ElementDescriptor;
+import org.dmfs.xmlobjects.android.pull.AndroidParserContext;
+import org.dmfs.xmlobjects.builder.IObjectBuilder;
 import org.xmlpull.v1.XmlPullParser;
 
 
 /**
- * Represents the current context of the parser. Subclass this to provide additional information to {@link IXmlObjectBuilder} instances. On Android use
+ * Represents the current context of the parser. Subclass this to provide additional information to {@link IObjectBuilder} instances. On Android use
  * {@link AndroidParserContext} to parse xml files with resource references.
  * 
  * @author Marten Gajda <marten@dmfs.org>
@@ -35,9 +36,9 @@ public class ParserContext
 {
 
 	/**
-	 * A cache of recycled objects. We cache one object per {@link XmlElementDescriptor}.
+	 * A cache of recycled objects. We cache one object per {@link ElementDescriptor}.
 	 */
-	private final Map<XmlElementDescriptor<?>, Object> mRecycledObjects = new HashMap<XmlElementDescriptor<?>, Object>(32);
+	private final Map<ElementDescriptor<?>, Object> mRecycledObjects = new HashMap<ElementDescriptor<?>, Object>(32);
 
 	/**
 	 * The current {@link XmlPullParser} instance.
@@ -70,14 +71,14 @@ public class ParserContext
 
 
 	/**
-	 * Recycle the given object. The basic implementation will store only one recycled object instance per {@link XmlElementDescriptor} in the recycler.
+	 * Recycle the given object. The basic implementation will store only one recycled object instance per {@link ElementDescriptor} in the recycler.
 	 * 
 	 * @param descriptor
-	 *            The {@link XmlElementDescriptor} of the XML element
+	 *            The {@link ElementDescriptor} of the XML element
 	 * @param object
 	 *            The object to recycle.
 	 */
-	public <T> void recycle(XmlElementDescriptor<T> descriptor, T object)
+	public <T> void recycle(ElementDescriptor<T> descriptor, T object)
 	{
 		if (object != null)
 		{
@@ -89,16 +90,16 @@ public class ParserContext
 	/**
 	 * Get a recycled instance. If there was no instance in the recycler this method returns <code>null</code>.
 	 * <p>
-	 * <stong>Note:</strong> The object is returned exactly as passed to {@link #recycle(XmlElementDescriptor, Object)}, so you need to ensure you reset the
+	 * <stong>Note:</strong> The object is returned exactly as passed to {@link #recycle(ElementDescriptor, Object)}, so you need to ensure you reset the
 	 * state yourself.
 	 * </p>
 	 * 
 	 * @param descriptor
-	 *            The {@link XmlElementDescriptor} for which to return a recycled object.
+	 *            The {@link ElementDescriptor} for which to return a recycled object.
 	 * @return a recycled object or <code>null</code> if there is none.
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getRecycled(XmlElementDescriptor<T> descriptor)
+	public <T> T getRecycled(ElementDescriptor<T> descriptor)
 	{
 		// we can safely cast here, because we know that recycle always puts the right type
 		return (T) mRecycledObjects.remove(descriptor);

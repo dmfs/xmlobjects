@@ -23,9 +23,9 @@ import java.io.Writer;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.QualifiedName;
 import org.dmfs.xmlobjects.XmlContext;
-import org.dmfs.xmlobjects.XmlElementDescriptor;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 import org.xmlpull.v1.XmlSerializer;
@@ -92,9 +92,17 @@ public class XmlObjectSerializer
 		 * @throws SerializerException
 		 * @throws IOException
 		 */
-		public <T> void writeChild(XmlElementDescriptor<T> descriptor, T child) throws SerializerException, IOException;
+		public <T> void writeChild(ElementDescriptor<T> descriptor, T child) throws SerializerException, IOException;
 
 
+		/**
+		 * Add a text node to the current element.
+		 * 
+		 * @param text
+		 *            The text to write.
+		 * @throws SerializerException
+		 * @throws IOException
+		 */
 		public void writeText(String text) throws SerializerException, IOException;
 	}
 
@@ -129,16 +137,21 @@ public class XmlObjectSerializer
 	{
 
 		@Override
-		public <T> void writeChild(XmlElementDescriptor<T> descriptor, T child) throws SerializerException, IOException
+		public <T> void writeChild(ElementDescriptor<T> descriptor, T child) throws SerializerException, IOException
 		{
-			if (descriptor.serializer != null)
+			QualifiedName name = descriptor.qualifiedName;
+
+			if (descriptor.builder == null)
 			{
-				QualifiedName name = descriptor.qualifiedName;
+				throw new SerializerException(name + " is not serializable");
+			}
+			else
+			{
 				try
 				{
 					mSerializer.startTag(name.namespace, name.name);
-					descriptor.serializer.writeAttributes(descriptor, child, mAttributeWriter, mSerializerContext);
-					descriptor.serializer.writeChildren(descriptor, child, mChildWriter, mSerializerContext);
+					descriptor.builder.writeAttributes(descriptor, child, mAttributeWriter, mSerializerContext);
+					descriptor.builder.writeChildren(descriptor, child, mChildWriter, mSerializerContext);
 					mSerializer.endTag(name.namespace, name.name);
 				}
 				catch (IllegalArgumentException e)
@@ -269,19 +282,19 @@ public class XmlObjectSerializer
 
 
 	/**
-	 * Inform the serializer that the given {@link XmlElementDescriptor} will be used. This allows the serializer to bind a prefix early.
+	 * Inform the serializer that the given {@link ElementDescriptor} will be used. This allows the serializer to bind a prefix early.
 	 * 
 	 * @param elementDescriptor
-	 *            The {@link XmlElementDescriptor} that will be used.
+	 *            The {@link ElementDescriptor} that will be used.
 	 */
-	public void useNamespace(XmlElementDescriptor<?> elementDescriptor)
+	public void useNamespace(ElementDescriptor<?> elementDescriptor)
 	{
 		useNamespace(elementDescriptor.qualifiedName.namespace);
 	}
 
 
 	/**
-	 * Serialize the given root object with the given {@link XmlElementDescriptor}.
+	 * Serialize the given root object with the given {@link ElementDescriptor}.
 	 * 
 	 * @param descriptor
 	 *            The descriptor of the object.
@@ -290,7 +303,7 @@ public class XmlObjectSerializer
 	 * @throws SerializerException
 	 * @throws IOException
 	 */
-	public <T> void serialize(XmlElementDescriptor<T> descriptor, T rootObject) throws SerializerException, IOException
+	public <T> void serialize(ElementDescriptor<T> descriptor, T rootObject) throws SerializerException, IOException
 	{
 		mSerializer.startDocument(null, null);
 		useNamespace(descriptor.qualifiedName);

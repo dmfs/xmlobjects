@@ -19,7 +19,7 @@ package org.dmfs.xmlobjects.pull;
 
 import java.util.LinkedList;
 
-import org.dmfs.xmlobjects.XmlElementDescriptor;
+import org.dmfs.xmlobjects.ElementDescriptor;
 
 
 /**
@@ -29,15 +29,15 @@ import org.dmfs.xmlobjects.XmlElementDescriptor;
  */
 public class XmlPath implements Cloneable
 {
-	public LinkedList<XmlElementDescriptor<?>> mPathElements;
+	public LinkedList<ElementDescriptor<?>> mPathElements;
 
 
-	public XmlPath(XmlElementDescriptor<?>... path)
+	public XmlPath(ElementDescriptor<?>... path)
 	{
-		LinkedList<XmlElementDescriptor<?>> pathElements = mPathElements = new LinkedList<XmlElementDescriptor<?>>();
+		LinkedList<ElementDescriptor<?>> pathElements = mPathElements = new LinkedList<ElementDescriptor<?>>();
 		if (path != null)
 		{
-			for (XmlElementDescriptor<?> element : path)
+			for (ElementDescriptor<?> element : path)
 			{
 				pathElements.push(element);
 			}
@@ -48,7 +48,7 @@ public class XmlPath implements Cloneable
 	@SuppressWarnings("unchecked")
 	private XmlPath(XmlPath path)
 	{
-		mPathElements = (LinkedList<XmlElementDescriptor<?>>) path.mPathElements.clone();
+		mPathElements = (LinkedList<ElementDescriptor<?>>) path.mPathElements.clone();
 	}
 
 
@@ -71,25 +71,25 @@ public class XmlPath implements Cloneable
 	}
 
 
-	void append(XmlElementDescriptor<?> element)
+	void append(ElementDescriptor<?> element)
 	{
 		mPathElements.push(element);
 	}
 
 
-	XmlElementDescriptor<?> peek()
+	ElementDescriptor<?> peek()
 	{
 		return mPathElements.peek();
 	}
 
 
-	XmlElementDescriptor<?> peekLast()
+	ElementDescriptor<?> peekLast()
 	{
 		return mPathElements.peekLast();
 	}
 
 
-	XmlElementDescriptor<?> pop()
+	ElementDescriptor<?> pop()
 	{
 		return mPathElements.pop();
 	}

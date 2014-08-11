@@ -15,18 +15,17 @@
  * 
  */
 
-package org.dmfs.xmlobjects.pull.android.builder;
+package org.dmfs.xmlobjects.android.builder;
 
 import java.lang.reflect.Field;
 import java.net.URI;
 
 import org.dmfs.xmlobjects.QualifiedName;
-import org.dmfs.xmlobjects.XmlElementDescriptor;
+import org.dmfs.xmlobjects.ElementDescriptor;
+import org.dmfs.xmlobjects.android.pull.AndroidParserContext;
+import org.dmfs.xmlobjects.android.pull.ResolveInt;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
-import org.dmfs.xmlobjects.pull.android.AndroidParserContext;
-import org.dmfs.xmlobjects.pull.android.ResolveInt;
-import org.dmfs.xmlobjects.pull.builder.reflection.ReflectionObjectBuilder;
 
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
@@ -40,17 +39,17 @@ import android.util.Xml;
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
-public class ReflectionResourceAttributeObjectBuilder<T> extends ReflectionObjectBuilder<T>
+public class ReflectionObjectBuilder<T> extends org.dmfs.xmlobjects.builder.reflection.ReflectionObjectBuilder<T>
 {
 
-	public ReflectionResourceAttributeObjectBuilder(Class<T> classParam)
+	public ReflectionObjectBuilder(Class<T> classParam)
 	{
 		super(classParam);
 	}
 
 
 	@Override
-	public T update(XmlElementDescriptor<T> descriptor, T object, QualifiedName attribute, String value, ParserContext context)
+	public T update(ElementDescriptor<T> descriptor, T object, QualifiedName attribute, String value, ParserContext context)
 		throws XmlObjectPullParserException
 	{
 		Resources resources = null;

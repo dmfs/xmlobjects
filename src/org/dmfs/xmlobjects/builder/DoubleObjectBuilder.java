@@ -15,11 +15,16 @@
  * 
  */
 
-package org.dmfs.xmlobjects.pull.builder;
+package org.dmfs.xmlobjects.builder;
 
-import org.dmfs.xmlobjects.XmlElementDescriptor;
+import java.io.IOException;
+
+import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
+import org.dmfs.xmlobjects.serializer.SerializerContext;
+import org.dmfs.xmlobjects.serializer.SerializerException;
+import org.dmfs.xmlobjects.serializer.XmlObjectSerializer.IXmlChildWriter;
 
 
 /**
@@ -31,7 +36,7 @@ import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
-public class DoubleObjectBuilder extends AbstractXmlObjectBuilder<Double>
+public class DoubleObjectBuilder extends AbstractObjectBuilder<Double>
 {
 
 	/**
@@ -54,7 +59,7 @@ public class DoubleObjectBuilder extends AbstractXmlObjectBuilder<Double>
 
 
 	@Override
-	public Double update(XmlElementDescriptor<Double> descriptor, Double object, String text, ParserContext context) throws XmlObjectPullParserException
+	public Double update(ElementDescriptor<Double> descriptor, Double object, String text, ParserContext context) throws XmlObjectPullParserException
 	{
 		try
 		{
@@ -71,4 +76,18 @@ public class DoubleObjectBuilder extends AbstractXmlObjectBuilder<Double>
 		}
 	}
 
+
+	@Override
+	public void writeChildren(ElementDescriptor<Double> descriptor, Double object, IXmlChildWriter childWriter, SerializerContext context)
+		throws SerializerException, IOException
+	{
+		if (object != null)
+		{
+			childWriter.writeText(object.toString());
+		}
+		else if (mStrict)
+		{
+			throw new IllegalStateException("Double value is null");
+		}
+	}
 }

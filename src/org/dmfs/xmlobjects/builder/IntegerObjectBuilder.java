@@ -15,11 +15,16 @@
  * 
  */
 
-package org.dmfs.xmlobjects.pull.builder;
+package org.dmfs.xmlobjects.builder;
 
-import org.dmfs.xmlobjects.XmlElementDescriptor;
+import java.io.IOException;
+
+import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
+import org.dmfs.xmlobjects.serializer.SerializerContext;
+import org.dmfs.xmlobjects.serializer.SerializerException;
+import org.dmfs.xmlobjects.serializer.XmlObjectSerializer.IXmlChildWriter;
 
 
 /**
@@ -31,7 +36,7 @@ import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
-public class IntegerObjectBuilder extends AbstractXmlObjectBuilder<Integer>
+public class IntegerObjectBuilder extends AbstractObjectBuilder<Integer>
 {
 
 	/**
@@ -54,7 +59,7 @@ public class IntegerObjectBuilder extends AbstractXmlObjectBuilder<Integer>
 
 
 	@Override
-	public Integer update(XmlElementDescriptor<Integer> descriptor, Integer object, String text, ParserContext context) throws XmlObjectPullParserException
+	public Integer update(ElementDescriptor<Integer> descriptor, Integer object, String text, ParserContext context) throws XmlObjectPullParserException
 	{
 		try
 		{
@@ -68,6 +73,21 @@ public class IntegerObjectBuilder extends AbstractXmlObjectBuilder<Integer>
 			}
 
 			throw new XmlObjectPullParserException("could not parse integer in '" + text + "'", e);
+		}
+	}
+
+
+	@Override
+	public void writeChildren(ElementDescriptor<Integer> descriptor, Integer object, IXmlChildWriter childWriter, SerializerContext context)
+		throws SerializerException, IOException
+	{
+		if (object != null)
+		{
+			childWriter.writeText(object.toString());
+		}
+		else if (mStrict)
+		{
+			throw new IllegalStateException("Integer value is null");
 		}
 	}
 

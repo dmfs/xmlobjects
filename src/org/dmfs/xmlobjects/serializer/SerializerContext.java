@@ -17,12 +17,12 @@
 
 package org.dmfs.xmlobjects.serializer;
 
+import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.XmlContext;
-import org.dmfs.xmlobjects.XmlElementDescriptor;
 
 
 /**
- * The context of the {@link XmlObjectSerializer}.
+ * The context of the {@link XmlObjectSerializer}. Subclass it to provide additional information to your serializers.
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
@@ -41,7 +41,7 @@ public class SerializerContext
 	 */
 	void setXmlContext(XmlContext xmlContext)
 	{
-		mXmlContext = xmlContext == null ? XmlElementDescriptor.DEFAULT_CONTEXT : xmlContext;
+		mXmlContext = xmlContext == null ? ElementDescriptor.DEFAULT_CONTEXT : xmlContext;
 	}
 
 

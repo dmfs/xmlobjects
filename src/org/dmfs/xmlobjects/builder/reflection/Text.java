@@ -15,7 +15,7 @@
  * 
  */
 
-package org.dmfs.xmlobjects.pull.builder.reflection;
+package org.dmfs.xmlobjects.builder.reflection;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,22 +24,12 @@ import java.lang.annotation.Target;
 
 
 /**
- * Identifies a field that is to be populated by an attribute.
+ * Identifies a field that is to be populated by a text value.
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
-public @interface Attribute {
+public @interface Text {
 
-	/**
-	 * The namespace of the attribute.
-	 */
-	String namespace() default "";
-
-
-	/**
-	 * The name of the attribute
-	 */
-	String name() default "";
 }

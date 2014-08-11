@@ -22,11 +22,11 @@ import java.util.Map;
 
 
 /**
- * Represents the context in which specific {@link XmlElementDescriptor}s are valid.
+ * Represents the context in which specific {@link ElementDescriptor}s are valid.
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
 public class XmlContext
 {
-	final Map<QualifiedName, XmlElementDescriptor<?>> DESCRIPTOR_MAP = new HashMap<QualifiedName, XmlElementDescriptor<?>>(32);
+	final Map<QualifiedName, ElementDescriptor<?>> DESCRIPTOR_MAP = new HashMap<QualifiedName, ElementDescriptor<?>>(32);
 }

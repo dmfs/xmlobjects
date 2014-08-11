@@ -15,14 +15,18 @@
  * 
  */
 
-package org.dmfs.xmlobjects.pull.builder;
+package org.dmfs.xmlobjects.builder;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.dmfs.xmlobjects.XmlElementDescriptor;
+import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
+import org.dmfs.xmlobjects.serializer.SerializerContext;
+import org.dmfs.xmlobjects.serializer.SerializerException;
+import org.dmfs.xmlobjects.serializer.XmlObjectSerializer.IXmlChildWriter;
 
 
 /**
@@ -34,7 +38,7 @@ import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
-public class UriObjectBuilder extends AbstractXmlObjectBuilder<URI>
+public class UriObjectBuilder extends AbstractObjectBuilder<URI>
 {
 	/**
 	 * A strict {@link UriObjectBuilder}. A strict builder will throw an {@link XmlObjectPullParserException} when the value is not a valid URI.
@@ -65,7 +69,7 @@ public class UriObjectBuilder extends AbstractXmlObjectBuilder<URI>
 
 
 	@Override
-	public URI update(XmlElementDescriptor<URI> descriptor, URI object, String text, ParserContext context) throws XmlObjectPullParserException
+	public URI update(ElementDescriptor<URI> descriptor, URI object, String text, ParserContext context) throws XmlObjectPullParserException
 	{
 		try
 		{
@@ -79,6 +83,21 @@ public class UriObjectBuilder extends AbstractXmlObjectBuilder<URI>
 			}
 
 			throw new XmlObjectPullParserException("could not parse URI in '" + text + "'", e);
+		}
+	}
+
+
+	@Override
+	public void writeChildren(ElementDescriptor<URI> descriptor, URI object, IXmlChildWriter childWriter, SerializerContext context)
+		throws SerializerException, IOException
+	{
+		if (object != null)
+		{
+			childWriter.writeText(object.toASCIIString());
+		}
+		else if (mStrict)
+		{
+			throw new IllegalStateException("URI value is null");
 		}
 	}
 }
