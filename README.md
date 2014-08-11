@@ -12,7 +12,7 @@ To use the Android specific builders you need the Android SDK (any recent releas
 
 ## Builders
 
-This library uses the concept of builders to create objects from the XML elements. For each XML element there must be at least one builder that knows how to transform it into an object. To do so, each builder has six methods to 
+This library uses the concept of builders to create objects from the XML elements. For each XML element there must be at least one builder that knows how to transform it into an object. To do so, each builder has eight methods to 
 
 * get a new object for a given XML Element
 * update an object with an attribute
@@ -20,6 +20,8 @@ This library uses the concept of builders to create objects from the XML element
 * update an object with a child element
 * update an object with an anonymous child (that's stil under development and not used in the current version)
 * finish the object
+* serialize attributes
+* serialize child elements and text
 
 Each time a start tag is parsed, the `get` method is called on the respective builder, which returns an object for this element. It's perfectly valid to return `null` if the start tag itself doesn't carry enough information to make up a new object. After the call to `get` the respective methods of the builder are called for each attribute, text value and child element of the current XML element. Finally the `finish` method is called for each object to do some final processing.
 
@@ -65,7 +67,7 @@ First you define the model that stores your data.
 
 		public class Library
 		{
-			// nothing, since we don't store the books in here
+			ArrayList<Book> books = new ArrayList<Book>();
 		}
 
 ### Defining builders
@@ -73,11 +75,11 @@ First you define the model that stores your data.
 There are a couple of predefined builders for simple types you can use, but for complex elements you'll have to create your own builder like so:
 
 
-		private static class BookBuilder extends AbstractXmlObjectBuilder<Book>
+		private static class BookBuilder extends AbstractObjectBuilder<Book>
 		{
 
 			@Override
-			public Book get(XmlElementDescriptor<Book> descriptor, Book recycle, ParserContext context)
+			public Book get(ElementDescriptor<Book> descriptor, Book recycle, ParserContext context)
 			{
 				if (recycle != null)
 				{
@@ -93,7 +95,7 @@ There are a couple of predefined builders for simple types you can use, but for 
 
 
 			@Override
-			public <V> Book update(XmlElementDescriptor<Book> descriptor, Book object, XmlElementDescriptor<V> childType,
+			public <V> Book update(ElementDescriptor<Book> descriptor, Book object, ElementDescriptor<V> childType,
 					V child, ParserContext context)
 			{
 				if (childType == TITLE)
@@ -110,32 +112,83 @@ There are a couple of predefined builders for simple types you can use, but for 
 				}
 				return object;
 			}
+
+
+			@Override
+			public void writeChildren(ElementDescriptor<Book> descriptor, Book book, IXmlChildWriter childWriter,
+					SerializerContext context) throws SerializerException, IOException
+			{
+				childWriter.writeChild(TITLE, book.title);
+				childWriter.writeChild(AUTHOR book.author;
+				childWriter.writeChild(PUBLISHED, book.published);
+			}
 		}
 
+
+If we pull the books from the stream we don't store them in the library. However, if we pull the library instead the parser will put all the books in there.
+
+		private static class LibraryBuilder extends AbstractObjectBuilder<Library>
+		{
+
+			@Override
+			public Book get(ElementDescriptor<Library> descriptor, Library recycle, ParserContext context)
+			{
+				if (recycle != null)
+				{
+					recycle.books.clear();
+					return recycle;
+				}
+				// return a new library
+				return new Library();
+			}
+
+
+			@Override
+			public <V> Book update(ElementDescriptor<Library> descriptor, Library object, ElementDescriptor<V> childType,
+					V child, ParserContext context)
+			{
+				if (childType == BOOK)
+				{
+					object.books.add((Book) child);
+				}
+				return object;
+			}
+
+
+			@Override
+			public void writeChildren(ElementDescriptor<Library> descriptor, Library library, IXmlChildWriter childWriter,
+					SerializerContext context) throws SerializerException, IOException
+			{
+				for (Book book:library.books)
+				{
+					childWriter.writeChild(BOOK, book);
+				}
+			}
+		}
 
 ### Defining the XML model
 
 Next, you define the XML model and assign builders.
 
 		// author is just a String
-		private final static XmlElementDescriptor<String> AUTHOR =
-			XmlElementDescriptor.register(QualifiedName.get("author"), StringObjectBuilder.INSTANCE);
+		private final static ElementDescriptor<String> AUTHOR =
+			ElementDescriptor.register(QualifiedName.get("author"), StringObjectBuilder.INSTANCE);
 
 		// title is just a String as well
-		private final static XmlElementDescriptor<String> TITLE =
-			XmlElementDescriptor.register(QualifiedName.get("title"), StringObjectBuilder.INSTANCE);
+		private final static ElementDescriptor<String> TITLE =
+			ElementDescriptor.register(QualifiedName.get("title"), StringObjectBuilder.INSTANCE);
 
 		// published is an integer
-		private final static XmlElementDescriptor<Integer> PUBLISHED =
-			XmlElementDescriptor.register(QualifiedName.get("published"), IntegerObjectBuilder.INSTANCE);
+		private final static ElementDescriptor<Integer> PUBLISHED =
+			ElementDescriptor.register(QualifiedName.get("published"), IntegerObjectBuilder.INSTANCE);
 
 		// book is built by a BookBuilder
-		private final static XmlElementDescriptor<Book> BOOK =
-			XmlElementDescriptor.register(QualifiedName.get("book"), new BookBuilder());
+		private final static ElementDescriptor<Book> BOOK =
+			ElementDescriptor.register(QualifiedName.get("book"), new BookBuilder());
 
-		// Library doesn't store any fields, so use the default builder which builds and returns nothing.
-		private final static XmlElementDescriptor<Library> LIBRARY =
-			XmlElementDescriptor.register(QualifiedName.get("library"), new AbstractXmlObjectBuilder<Library>());
+		// use the builder above to build & serialize libraries
+		private final static ElementDescriptor<Library> LIBRARY =
+			ElementDescriptor.register(QualifiedName.get("library"), new LibraryBuilder());
 
 ### Pulling objects
 
@@ -146,14 +199,14 @@ Now we're set up to pull books from the XML file.
 		XmlPullParser parser = pullParserFactory.newPullParser();
 		parser.setInput(new StringReader(inputXml) /* pass the reader that reads the xml stream */);
 
-		// get an XmlObjectPull instancefor this parser
+		// get an XmlObjectPull instance for this parser
 		XmlObjectPull objectPull = new XmlObjectPull(parser);
 
 		// the path to pull from, i.e. only elements in <library>
 		XmlPath libraryPath = new XmlPath(LIBRARY);
 
 		Book book = null;
-		while (objectPull.hasNext(BOOK, libraryPath))
+		while (objectPull.moveToNext(BOOK, libraryPath))
 		{
 			book = op.pull(BOOK /* pull elements that are Books */,
 				book /* recycle the previous book */,
@@ -161,6 +214,22 @@ Now we're set up to pull books from the XML file.
 
 			// do something with book
 		}
+
+
+### Serializing objects
+
+Each builder also knows how to serialize. Once everything is set up for pulling objects, serializing is just treat. 
+
+
+		// initialize the serializer for writing to an OutoutStream
+		XmlObjectSerializer os = new XmlObjectSerializer(outputstream, "UTF-8", null /* use default context */);
+
+		// serialize a library
+		os.serialize(LIBRARY, library);
+		
+		// done
+		out.close();
+
 
 
 ### Reflection
@@ -188,16 +257,16 @@ Using the Reflection builder for the class `Book` above the models would look li
 		}
 
 		// book is built by Reflection 
-		private final static XmlElementDescriptor<Book> BOOK =
-			XmlElementDescriptor.register(QualifiedName.get("book"), new ReflectionObjectBuilder<Book>(Book.class));
+		private final static ElementDescriptor<Book> BOOK =
+			ElementDescriptor.register(QualifiedName.get("book"), new ReflectionObjectBuilder<Book>(Book.class));
 
+This will take care of parsing and serializing books properly.
 
 
 ## TODO:
 
 * improve code, finialize interfaces
 * support anonymous elements, i.e. elements that don't have an XmlElementDescriptor
-* add a serializer that works the same way for serializing objects to XML
 * publish test suite
 
 ## License
