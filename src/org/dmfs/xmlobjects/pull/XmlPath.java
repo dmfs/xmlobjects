@@ -39,7 +39,7 @@ public class XmlPath implements Cloneable
 		{
 			for (ElementDescriptor<?> element : path)
 			{
-				pathElements.push(element);
+				pathElements.addFirst(element);
 			}
 		}
 	}
@@ -73,7 +73,7 @@ public class XmlPath implements Cloneable
 
 	void append(ElementDescriptor<?> element)
 	{
-		mPathElements.push(element);
+		mPathElements.addFirst(element);
 	}
 
 
@@ -91,7 +91,7 @@ public class XmlPath implements Cloneable
 
 	ElementDescriptor<?> pop()
 	{
-		return mPathElements.pop();
+		return mPathElements.removeFirst();
 	}
 
 }

@@ -218,7 +218,7 @@ public class XmlObjectPull
 									parser.getAttributeValue(i), parserContext);
 							}
 
-							objectStack.push(currentObject);
+							objectStack.addFirst(currentObject);
 							currentPath.append(currentElementDescriptor);
 						}
 						else
@@ -245,7 +245,7 @@ public class XmlObjectPull
 
 						// remove child from the stack
 						currentPath.pop();
-						objectStack.pop();
+						objectStack.removeFirst();
 
 						// get parent object
 						currentElementDescriptor = currentPath.peek();
