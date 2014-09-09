@@ -35,6 +35,7 @@ The `get` method takes an additional parameter to pass an old instance that is n
 
 The code snippets below should give you an idea how this library works and how to use it. This example parses an XML file that looks like this:
 
+```xml
 		<library>
 			<book>
 				<author>Moby-Dick; or, The Whale</author>
@@ -47,11 +48,13 @@ The code snippets below should give you an idea how this library works and how t
 				<published>1865</published>
 			</book>
 		</library>
+```
 
 ### Defining the Java model
 
 First you define the model that stores your data.
 
+```java
 		public class Book
 		{
 			public String title;
@@ -69,12 +72,14 @@ First you define the model that stores your data.
 		{
 			ArrayList<Book> books = new ArrayList<Book>();
 		}
+```
 
 ### Defining builders
 
 There are a couple of predefined builders for simple types you can use, but for complex elements you'll have to create your own builder like so:
 
 
+```java
 		private static class BookBuilder extends AbstractObjectBuilder<Book>
 		{
 
@@ -123,10 +128,12 @@ There are a couple of predefined builders for simple types you can use, but for 
 				childWriter.writeChild(PUBLISHED, book.published);
 			}
 		}
+```
 
 
 If we pull the books from the stream we don't store them in the library. However, if we pull the library instead the parser will put all the books in there.
 
+```java
 		private static class LibraryBuilder extends AbstractObjectBuilder<Library>
 		{
 
@@ -165,11 +172,13 @@ If we pull the books from the stream we don't store them in the library. However
 				}
 			}
 		}
+```
 
 ### Defining the XML model
 
 Next, you define the XML model and assign builders.
 
+```java
 		// author is just a String
 		private final static ElementDescriptor<String> AUTHOR =
 			ElementDescriptor.register(QualifiedName.get("author"), StringObjectBuilder.INSTANCE);
@@ -189,11 +198,13 @@ Next, you define the XML model and assign builders.
 		// use the builder above to build & serialize libraries
 		private final static ElementDescriptor<Library> LIBRARY =
 			ElementDescriptor.register(QualifiedName.get("library"), new LibraryBuilder());
+```
 
 ### Pulling objects
 
 Now we're set up to pull books from the XML file.
 
+```java
 		// get an XmlPullParser
 		XmlPullParserFactory pullParserFactory = XmlPullParserFactory.newInstance();
 		XmlPullParser parser = pullParserFactory.newPullParser();
@@ -214,13 +225,14 @@ Now we're set up to pull books from the XML file.
 
 			// do something with book
 		}
+```
 
 
 ### Serializing objects
 
 Each builder also knows how to serialize. Once everything is set up for pulling objects, serializing is just treat. 
 
-
+```java
 		// initialize the serializer for writing to an OutoutStream
 		XmlObjectSerializer os = new XmlObjectSerializer(outputstream, "UTF-8", null /* use default context */);
 
@@ -229,14 +241,14 @@ Each builder also knows how to serialize. Once everything is set up for pulling 
 		
 		// done
 		out.close();
-
-
+```
 
 ### Reflection
 
 This framework doesn't rely on Reflection. However, there is some proof-of-concept state code that can make it easier to populate objects from XML elemtents.
 Using the Reflection builder for the class `Book` above the models would look like:
 
+```java
 		private static class Book
 		{
 			@Element(name = "title")
@@ -259,6 +271,7 @@ Using the Reflection builder for the class `Book` above the models would look li
 		// book is built by Reflection 
 		private final static ElementDescriptor<Book> BOOK =
 			ElementDescriptor.register(QualifiedName.get("book"), new ReflectionObjectBuilder<Book>(Book.class));
+```
 
 This will take care of parsing and serializing books properly.
 
@@ -271,5 +284,18 @@ This will take care of parsing and serializing books properly.
 
 ## License
 
-Copyright (c) Marten Gajda 2014, licensed under Apache 2 (see `LICENSE`).
+Copyright (c) Marten Gajda 2014
+
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
