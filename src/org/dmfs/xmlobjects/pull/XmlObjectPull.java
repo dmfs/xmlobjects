@@ -20,9 +20,9 @@ package org.dmfs.xmlobjects.pull;
 import java.io.IOException;
 import java.util.LinkedList;
 
+import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.QualifiedName;
 import org.dmfs.xmlobjects.XmlContext;
-import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.builder.IObjectBuilder;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -60,6 +60,7 @@ public class XmlObjectPull
 		mParser = parser;
 		mParserContext = parserContext;
 		mParserContext.setXmlPullParser(parser);
+		mParserContext.setObjectPullParser(this);
 		parser.next();
 	}
 
@@ -126,13 +127,26 @@ public class XmlObjectPull
 
 
 	/**
-	 * Returns an {@link ElementDescriptor} for the current element.
+	 * Returns an {@link ElementDescriptor} for the current element. When called from any method of an {@link IObjectBuilder} this is guaranteed to be the same
+	 * as the passed {@link ElementDescriptor}.
 	 * 
 	 * @return The {@link ElementDescriptor} that will be used to build an object for this element.
 	 */
 	public ElementDescriptor<?> getCurrentElementDescriptor()
 	{
-		return ElementDescriptor.get(getCurrentElementQualifiedName(), mContext);
+		return mCurrentElementDescriptorPath.peek();
+	}
+
+
+	/**
+	 * Returns the current depth in the XML element tree. When called from any method of an {@link IObjectBuilder} this is guaranteed to be the depth of the
+	 * current element.
+	 * 
+	 * @return The current depth.
+	 */
+	public int getCurrentDepth()
+	{
+		return mCurrentElementDescriptorPath.length();
 	}
 
 
@@ -204,6 +218,9 @@ public class XmlObjectPull
 								recycled = parserContext.getRecycled(currentElementDescriptor);
 							}
 
+							// append the descriptor to the current path to ensure it's already present when we get the currentObject
+							currentPath.append(currentElementDescriptor);
+
 							currentBuilder = mCurrentBuilder = currentElementDescriptor.builder;
 							currentObject = ((IObjectBuilder<V>) currentBuilder).get((ElementDescriptor<V>) currentElementDescriptor, (V) recycled,
 								parserContext);
@@ -213,13 +230,11 @@ public class XmlObjectPull
 							// pass all attributes to the builder
 							for (int i = 0, count = parser.getAttributeCount(); i < count; ++i)
 							{
-								currentObject = ((IObjectBuilder<V>) currentBuilder).update((ElementDescriptor<V>) currentElementDescriptor,
-									(V) currentObject, QualifiedName.get(parser.getAttributeNamespace(i), parser.getAttributeName(i)),
-									parser.getAttributeValue(i), parserContext);
+								currentObject = ((IObjectBuilder<V>) currentBuilder).update((ElementDescriptor<V>) currentElementDescriptor, (V) currentObject,
+									QualifiedName.get(parser.getAttributeNamespace(i), parser.getAttributeName(i)), parser.getAttributeValue(i), parserContext);
 							}
 
 							objectStack.addFirst(currentObject);
-							currentPath.append(currentElementDescriptor);
 						}
 						else
 						{
@@ -263,8 +278,8 @@ public class XmlObjectPull
 						}
 						else
 						{
-							currentObject = ((IObjectBuilder<U>) currentBuilder).update((ElementDescriptor<U>) currentElementDescriptor,
-								(U) currentObject, childClass, childObject, parserContext);
+							currentObject = ((IObjectBuilder<U>) currentBuilder).update((ElementDescriptor<U>) currentElementDescriptor, (U) currentObject,
+								childClass, childObject, parserContext);
 						}
 					}
 					else if (currentDepth == ignoreDepth)

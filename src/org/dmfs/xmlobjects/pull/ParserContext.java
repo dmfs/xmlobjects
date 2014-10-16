@@ -17,7 +17,9 @@
 
 package org.dmfs.xmlobjects.pull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.dmfs.xmlobjects.ElementDescriptor;
@@ -40,10 +42,25 @@ public class ParserContext
 	 */
 	private final Map<ElementDescriptor<?>, Object> mRecycledObjects = new HashMap<ElementDescriptor<?>, Object>(32);
 
+	private List<Map<ElementDescriptor<?>, Object>> mState;
+
 	/**
 	 * The current {@link XmlPullParser} instance.
 	 */
 	private XmlPullParser mParser;
+
+	private XmlObjectPull mObjectPullParser;
+
+
+	/**
+	 * Set the current {@link XmlObjectPull} parser this instance belongs to.
+	 * 
+	 * @param objectPullParser
+	 */
+	void setObjectPullParser(XmlObjectPull objectPullParser)
+	{
+		mObjectPullParser = objectPullParser;
+	}
 
 
 	/**
@@ -90,8 +107,8 @@ public class ParserContext
 	/**
 	 * Get a recycled instance. If there was no instance in the recycler this method returns <code>null</code>.
 	 * <p>
-	 * <stong>Note:</strong> The object is returned exactly as passed to {@link #recycle(ElementDescriptor, Object)}, so you need to ensure you reset the
-	 * state yourself.
+	 * <stong>Note:</strong> The object is returned exactly as passed to {@link #recycle(ElementDescriptor, Object)}, so you need to ensure you reset the state
+	 * yourself.
 	 * </p>
 	 * 
 	 * @param descriptor
@@ -104,4 +121,78 @@ public class ParserContext
 		// we can safely cast here, because we know that recycle always puts the right type
 		return (T) mRecycledObjects.remove(descriptor);
 	}
+
+
+	/**
+	 * Stores a state object for the current element and depth. Only elements with the same {@link ElementDescriptor} at the same depth can retrieve this state
+	 * object through {@link #getState()}.
+	 * <p>
+	 * Builders should recycle the state object whenever possible.
+	 * </p>
+	 * 
+	 * @param object
+	 *            The state object to store or <code>null</code> to free this object.
+	 */
+	public void setState(Object object)
+	{
+		Map<ElementDescriptor<?>, Object> depthStateMap = getDepthStateMap(mObjectPullParser.getCurrentDepth(), true);
+
+		ElementDescriptor<?> currentDescriptor = mObjectPullParser.getCurrentElementDescriptor();
+		depthStateMap.put(currentDescriptor, object);
+	}
+
+
+	/**
+	 * Get the state object of the current element. The object must have been set by {@link #setState(Object)}.
+	 * 
+	 * @return An {@link Object} or <code>null</code> if there is no state object.
+	 */
+	public Object getState()
+	{
+		Map<ElementDescriptor<?>, Object> stateMap = getDepthStateMap(mObjectPullParser.getCurrentDepth(), false);
+		if (stateMap == null)
+		{
+			return null;
+		}
+
+		ElementDescriptor<?> currentDescriptor = mObjectPullParser.getCurrentElementDescriptor();
+		return stateMap.get(currentDescriptor);
+	}
+
+
+	/**
+	 * Return the element state map for the given depth, creating non-existing maps if required.
+	 * 
+	 * @param depth
+	 *            The depth for which to retrieve the state map.
+	 * @param create
+	 *            <code>true</code> to create a new map if it doesn't exist.
+	 * @return
+	 */
+	private Map<ElementDescriptor<?>, Object> getDepthStateMap(int depth, boolean create)
+	{
+		if (mState == null)
+		{
+			mState = new ArrayList<Map<ElementDescriptor<?>, Object>>(Math.max(16, depth + 8));
+		}
+
+		// fill array list with null values up to the current depth
+		while (depth > mState.size())
+		{
+			mState.add(null);
+		}
+
+		Map<ElementDescriptor<?>, Object> map = mState.get(depth - 1 /* depth is at least 1 */);
+
+		if (!create || map != null)
+		{
+			return map;
+		}
+
+		// map is null and we shall create it
+		map = new HashMap<ElementDescriptor<?>, Object>(8);
+		mState.set(depth - 1, map);
+		return map;
+	}
+
 }
