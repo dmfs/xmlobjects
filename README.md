@@ -4,6 +4,17 @@ __A lightweight high level XML pull parser framework__
 
 This library is meant to build an XML stream parser that allows memory efficient operation while still beeing convenient. With this library you pull the objects you're interested in one by one. You can process one object before you parse the next one, allowing you to recycle the returned object.
 
+## Key benefits
+
+* __On-the-fly processing__  
+Allows to process data right when it's parsed, e.g. after parsing a large binary BLOB you ca save it immedialtely to a file and free the memory before parsing the next one. There is no need to parse the enitre XML tree into memory before processing it.  
+Also allows to serialize data from arbitrary sources. There is no need to keep all the data in memory at the time you start the serializer as long as you can access each bit at the time it's being serialized.
+* __Object recycling__  
+Allows to recycle intermediate objects. When parsing long XML streams with repeating sub-tree patterns you can pull each pattern one by one, process it and reuse the parsed objects for the next pattern, giving the garbage collector less work to be done. You also can parse into objects that already exist.
+* __Support for arbitrary classes__  
+Allows to parse directly into objects of arbitrary (even foreign) classes, no need to create temporary POJOs or modify existing classes. As long as you're able to create an object and populate its fields you can parse XML into it.  
+Also allows to serialize arbitrary objects. All you need to do is to write a simple serializer that knows how to serialize objects of a specific class.
+
 ## Requirements
 
 This code builds on top of an existing parser that implements the XmlPull interface, see http://www.xmlpull.org.
@@ -230,7 +241,7 @@ Now we're set up to pull books from the XML file.
 
 ### Serializing objects
 
-Each builder also knows how to serialize. Once everything is set up for pulling objects, serializing is just treat. 
+Each builder also knows how to serialize. Once everything is set up for pulling objects, serializing is just a treat. 
 
 ```java
 		// initialize the serializer for writing to an OutoutStream
