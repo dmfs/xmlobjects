@@ -67,7 +67,7 @@ public class StringAttributeObjectBuilder extends AbstractObjectBuilder<String>
 	public void writeAttributes(ElementDescriptor<String> descriptor, String object, IXmlAttributeWriter attributeWriter, SerializerContext context)
 		throws SerializerException, IOException
 	{
-		attributeWriter.writeAttribute(attribute, object);
+		attributeWriter.writeAttribute(attribute, object, context);
 	}
 
 }

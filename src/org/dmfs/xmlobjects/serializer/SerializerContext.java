@@ -17,8 +17,12 @@
 
 package org.dmfs.xmlobjects.serializer;
 
-import org.dmfs.xmlobjects.ElementDescriptor;
+import java.util.Set;
+
 import org.dmfs.xmlobjects.XmlContext;
+import org.xmlpull.v1.XmlPullParserException;
+import org.xmlpull.v1.XmlPullParserFactory;
+import org.xmlpull.v1.XmlSerializer;
 
 
 /**
@@ -31,17 +35,30 @@ public class SerializerContext
 	/**
 	 * The {@link XmlContext}.
 	 */
-	private XmlContext mXmlContext;
-
+	XmlContext xmlContext;
 
 	/**
-	 * Set the {@link XmlContext} to use.
-	 * 
-	 * @param xmlContext
+	 * The actual serializer.
 	 */
-	void setXmlContext(XmlContext xmlContext)
+	XmlSerializer serializer;
+
+	/**
+	 * A set of known name spaces.
+	 */
+	Set<String> knownNamespaces;
+
+
+	public SerializerContext(XmlContext xmlContext) throws SerializerException
 	{
-		mXmlContext = xmlContext == null ? ElementDescriptor.DEFAULT_CONTEXT : xmlContext;
+		this.xmlContext = xmlContext;
+		try
+		{
+			this.serializer = XmlPullParserFactory.newInstance().newSerializer();
+		}
+		catch (XmlPullParserException e)
+		{
+			throw new SerializerException("can't get serializer", e);
+		}
 	}
 
 
@@ -52,6 +69,6 @@ public class SerializerContext
 	 */
 	public XmlContext getXmlContext()
 	{
-		return mXmlContext;
+		return xmlContext;
 	}
 }

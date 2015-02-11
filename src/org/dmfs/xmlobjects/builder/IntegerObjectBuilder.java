@@ -83,7 +83,7 @@ public class IntegerObjectBuilder extends AbstractObjectBuilder<Integer>
 	{
 		if (object != null)
 		{
-			childWriter.writeText(object.toString());
+			childWriter.writeText(object.toString(), context);
 		}
 		else if (mStrict)
 		{

@@ -83,7 +83,7 @@ public class DoubleObjectBuilder extends AbstractObjectBuilder<Double>
 	{
 		if (object != null)
 		{
-			childWriter.writeText(object.toString());
+			childWriter.writeText(object.toString(), context);
 		}
 		else if (mStrict)
 		{

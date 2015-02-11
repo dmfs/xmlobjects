@@ -93,7 +93,7 @@ public class UriObjectBuilder extends AbstractObjectBuilder<URI>
 	{
 		if (object != null)
 		{
-			childWriter.writeText(object.toASCIIString());
+			childWriter.writeText(object.toASCIIString(), context);
 		}
 		else if (mStrict)
 		{

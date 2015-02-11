@@ -118,7 +118,7 @@ public class ElementMapObjectBuilder extends AbstractObjectBuilder<Map<ElementDe
 		{
 			for (Entry<ElementDescriptor<?>, Object> element : object.entrySet())
 			{
-				childWriter.writeChild((ElementDescriptor<Object>) element.getKey(), element.getValue());
+				childWriter.writeChild((ElementDescriptor<Object>) element.getKey(), element.getValue(), context);
 			}
 		}
 	}

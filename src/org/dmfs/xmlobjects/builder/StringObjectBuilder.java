@@ -60,6 +60,6 @@ public class StringObjectBuilder extends AbstractObjectBuilder<String>
 	public void writeChildren(ElementDescriptor<String> descriptor, String object, IXmlChildWriter childWriter, SerializerContext context)
 		throws SerializerException, IOException
 	{
-		childWriter.writeText(object);
+		childWriter.writeText(object, context);
 	}
 }

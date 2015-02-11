@@ -139,11 +139,11 @@ public class SetObjectBuilder<T> extends AbstractObjectBuilder<Set<T>>
 				{
 					@SuppressWarnings("unchecked")
 					ElementDescriptor<T> childDescriptor = (ElementDescriptor<T>) ElementDescriptor.get((QualifiedName) element, xmlContext);
-					childWriter.writeChild(childDescriptor, element);
+					childWriter.writeChild(childDescriptor, element, context);
 				}
 				else
 				{
-					childWriter.writeChild(mSetElementDescriptor, element);
+					childWriter.writeChild(mSetElementDescriptor, element, context);
 				}
 			}
 		}

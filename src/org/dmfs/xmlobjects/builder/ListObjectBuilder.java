@@ -143,11 +143,11 @@ public class ListObjectBuilder<T> extends AbstractObjectBuilder<List<T>>
 				{
 					@SuppressWarnings("unchecked")
 					ElementDescriptor<T> childDescriptor = (ElementDescriptor<T>) ElementDescriptor.get((QualifiedName) element, xmlContext);
-					childWriter.writeChild(childDescriptor, element);
+					childWriter.writeChild(childDescriptor, element, context);
 				}
 				else
 				{
-					childWriter.writeChild(mListElementDescriptor, element);
+					childWriter.writeChild(mListElementDescriptor, element, context);
 				}
 			}
 		}

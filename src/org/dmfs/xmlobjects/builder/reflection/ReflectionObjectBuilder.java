@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.QualifiedName;
 import org.dmfs.xmlobjects.XmlContext;
-import org.dmfs.xmlobjects.ElementDescriptor;
 import org.dmfs.xmlobjects.builder.AbstractObjectBuilder;
 import org.dmfs.xmlobjects.pull.ParserContext;
 import org.dmfs.xmlobjects.pull.Recyclable;
@@ -133,7 +133,7 @@ public class ReflectionObjectBuilder<T> extends AbstractObjectBuilder<T>
 					elementMap.put(QualifiedName.get(namespace, name), field);
 					elementList.add(new FieldHolder(QualifiedName.get(namespace, name), field));
 				}
-				
+
 				Text text = field.getAnnotation(Text.class);
 				if (text != null)
 				{
@@ -336,7 +336,7 @@ public class ReflectionObjectBuilder<T> extends AbstractObjectBuilder<T>
 
 			if (value != null)
 			{
-				attributeWriter.writeAttribute(attribute.getKey(), value.toString());
+				attributeWriter.writeAttribute(attribute.getKey(), value.toString(), context);
 			}
 		}
 	}
@@ -374,17 +374,17 @@ public class ReflectionObjectBuilder<T> extends AbstractObjectBuilder<T>
 				{
 					for (Object child : (Collection<?>) value)
 					{
-						childWriter.writeChild(childDescriptor, child);
+						childWriter.writeChild(childDescriptor, child, context);
 					}
 				}
 				else
 				{
-					childWriter.writeChild(childDescriptor, value);
+					childWriter.writeChild(childDescriptor, value, context);
 				}
 			}
 			else if (value != null)
 			{
-				childWriter.writeText(value.toString());
+				childWriter.writeText(value.toString(), context);
 				;
 			}
 		}
