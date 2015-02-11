@@ -83,12 +83,64 @@ public final class ElementDescriptor<T>
 	}
 
 
+	/**
+	 * Register an element with the given name and no name space using the given {@link IObjectBuilder} in the default {@link XmlContext}.
+	 * 
+	 * @param name
+	 *            The name of the element.
+	 * @param builder
+	 *            The {@link IObjectBuilder} to build and serialize this element.
+	 * @return The {@link ElementDescriptor}.
+	 */
+	public static <T> ElementDescriptor<T> register(String name, IObjectBuilder<T> builder)
+	{
+		return register(QualifiedName.get(name), builder, DEFAULT_CONTEXT);
+	}
+
+
+	/**
+	 * Register an element with the given {@link QualifiedName} using the given {@link IObjectBuilder} in the default {@link XmlContext}.
+	 * 
+	 * @param qname
+	 *            The {@link QualifiedName} of the element.
+	 * @param builder
+	 *            The {@link IObjectBuilder} to build and serialize this element.
+	 * @return The {@link ElementDescriptor}.
+	 */
 	public static <T> ElementDescriptor<T> register(QualifiedName qname, IObjectBuilder<T> builder)
 	{
 		return register(qname, builder, DEFAULT_CONTEXT);
 	}
 
 
+	/**
+	 * Register an element with the given name and no name space using the given {@link IObjectBuilder} in the given {@link XmlContext}.
+	 * 
+	 * @param name
+	 *            The name of the element.
+	 * @param builder
+	 *            The {@link IObjectBuilder} to build and serialize this element.
+	 * @param context
+	 *            An {@link XmlContext}.
+	 * @return The {@link ElementDescriptor}.
+	 */
+	public static <T> ElementDescriptor<T> register(String name, IObjectBuilder<T> builder, XmlContext context)
+	{
+		return register(QualifiedName.get(name), builder, context);
+	}
+
+
+	/**
+	 * Register an element with the given {@link QualifiedName} using the given {@link IObjectBuilder} in the given {@link XmlContext}.
+	 * 
+	 * @param qname
+	 *            The {@link QualifiedName} of the element.
+	 * @param builder
+	 *            The {@link IObjectBuilder} to build and serialize this element.
+	 * @param context
+	 *            An {@link XmlContext} or <code>null</code> to use the default {@link XmlContext}.
+	 * @return The {@link ElementDescriptor}.
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T> ElementDescriptor<T> register(QualifiedName qname, IObjectBuilder<T> builder, XmlContext context)
 	{
