@@ -65,37 +65,61 @@ public class ListObjectBuilder<T> extends AbstractObjectBuilder<List<T>>
 	private final IObjectBuilder<T> mListElementBuilder;
 
 	private final int mInitialCapacity;
+	private final boolean mStoreNull;
 
 
 	public ListObjectBuilder(ElementDescriptor<T> listElementDescriptor)
 	{
-		mListElementDescriptor = listElementDescriptor;
-		mListElementBuilder = null;
-		mInitialCapacity = DEFAULT_INITIAL_CAPACITY;
+		this(listElementDescriptor, DEFAULT_INITIAL_CAPACITY, true);
+	}
+
+
+	public ListObjectBuilder(ElementDescriptor<T> listElementDescriptor, boolean storeNull)
+	{
+		this(listElementDescriptor, DEFAULT_INITIAL_CAPACITY, storeNull);
 	}
 
 
 	public ListObjectBuilder(ElementDescriptor<T> listElementDescriptor, int initialCapacity)
 	{
+		this(listElementDescriptor, initialCapacity, true);
+	}
+
+
+	public ListObjectBuilder(ElementDescriptor<T> listElementDescriptor, int initialCapacity, boolean storeNull)
+	{
 		mListElementDescriptor = listElementDescriptor;
 		mListElementBuilder = null;
 		mInitialCapacity = initialCapacity;
+		mStoreNull = storeNull;
 	}
+
 
 
 	public ListObjectBuilder(IObjectBuilder<T> listElementBuilder)
 	{
-		mListElementDescriptor = null;
-		mListElementBuilder = listElementBuilder;
-		mInitialCapacity = DEFAULT_INITIAL_CAPACITY;
+		this(listElementBuilder, DEFAULT_INITIAL_CAPACITY, true);
+	}
+
+
+	public ListObjectBuilder(IObjectBuilder<T> listElementBuilder, boolean storeNull)
+	{
+		this(listElementBuilder, DEFAULT_INITIAL_CAPACITY, storeNull);
 	}
 
 
 	public ListObjectBuilder(IObjectBuilder<T> listElementBuilder, int initialCapacity)
 	{
+		this(listElementBuilder, initialCapacity, true);
+	}
+
+
+	public ListObjectBuilder(IObjectBuilder<T> listElementBuilder, int initialCapacity, boolean storeNull)
+	{
 		mListElementDescriptor = null;
 		mListElementBuilder = listElementBuilder;
 		mInitialCapacity = initialCapacity;
+		mStoreNull = storeNull;
 	}
 
 
@@ -124,7 +148,10 @@ public class ListObjectBuilder<T> extends AbstractObjectBuilder<List<T>>
 		if (childDescriptor == mListElementDescriptor || mListElementDescriptor == null && childDescriptor != null
 			&& mListElementBuilder == childDescriptor.builder)
 		{
-			object.add((T) child);
+			if (child != null || mStoreNull)
+			{
+				object.add((T) child);
+			}
 		}
 		return object;
 	}

@@ -63,37 +63,60 @@ public class SetObjectBuilder<T> extends AbstractObjectBuilder<Set<T>>
 	private final IObjectBuilder<T> mSetElementBuilder;
 
 	private final int mInitialCapacity;
+	private final boolean mStoreNull;
 
 
 	public SetObjectBuilder(ElementDescriptor<T> setElementDescriptor)
 	{
-		mSetElementDescriptor = setElementDescriptor;
-		mSetElementBuilder = null;
-		mInitialCapacity = DEFAULT_INITIAL_CAPACITY;
+		this(setElementDescriptor, DEFAULT_INITIAL_CAPACITY, true);
+	}
+
+
+	public SetObjectBuilder(ElementDescriptor<T> setElementDescriptor, boolean storeNull)
+	{
+		this(setElementDescriptor, DEFAULT_INITIAL_CAPACITY, storeNull);
 	}
 
 
 	public SetObjectBuilder(ElementDescriptor<T> setElementDescriptor, int initialCapacity)
 	{
+		this(setElementDescriptor, initialCapacity, true);
+	}
+
+
+	public SetObjectBuilder(ElementDescriptor<T> setElementDescriptor, int initialCapacity, boolean storeNull)
+	{
 		mSetElementDescriptor = setElementDescriptor;
 		mSetElementBuilder = null;
 		mInitialCapacity = initialCapacity;
+		mStoreNull = storeNull;
 	}
 
 
 	public SetObjectBuilder(IObjectBuilder<T> setElementBuilder)
 	{
-		mSetElementDescriptor = null;
-		mSetElementBuilder = setElementBuilder;
-		mInitialCapacity = DEFAULT_INITIAL_CAPACITY;
+		this(setElementBuilder, DEFAULT_INITIAL_CAPACITY, true);
+	}
+
+
+	public SetObjectBuilder(IObjectBuilder<T> setElementBuilder, boolean storeNull)
+	{
+		this(setElementBuilder, DEFAULT_INITIAL_CAPACITY, storeNull);
 	}
 
 
 	public SetObjectBuilder(IObjectBuilder<T> setElementBuilder, int initialCapacity)
 	{
+		this(setElementBuilder, initialCapacity, true);
+	}
+
+
+	public SetObjectBuilder(IObjectBuilder<T> setElementBuilder, int initialCapacity, boolean storeNull)
+	{
 		mSetElementDescriptor = null;
 		mSetElementBuilder = setElementBuilder;
 		mInitialCapacity = initialCapacity;
+		mStoreNull = storeNull;
 	}
 
 
@@ -120,7 +143,10 @@ public class SetObjectBuilder<T> extends AbstractObjectBuilder<Set<T>>
 		if (childDescriptor == mSetElementDescriptor || mSetElementDescriptor == null && childDescriptor != null
 			&& mSetElementBuilder == childDescriptor.builder)
 		{
-			object.add((T) child);
+			if (child != null || mStoreNull)
+			{
+				object.add((T) child);
+			}
 		}
 		return object;
 	}

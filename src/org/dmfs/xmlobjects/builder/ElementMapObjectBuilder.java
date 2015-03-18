@@ -103,8 +103,10 @@ public class ElementMapObjectBuilder extends AbstractObjectBuilder<Map<ElementDe
 	public <V> Map<ElementDescriptor<?>, Object> update(ElementDescriptor<Map<ElementDescriptor<?>, Object>> descriptor,
 		Map<ElementDescriptor<?>, Object> object, ElementDescriptor<V> childDescriptor, V child, ParserContext context) throws XmlObjectPullParserException
 	{
-		object.put((ElementDescriptor<Object>) childDescriptor, child);
-
+		if (childDescriptor != null)
+		{
+			object.put((ElementDescriptor<Object>) childDescriptor, child);
+		}
 		return object;
 	}
 
