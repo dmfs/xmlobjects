@@ -286,7 +286,7 @@ public final class ElementDescriptor<T>
 		// register the descriptor with all parents
 		for (ElementDescriptor<?> parentElement : parentElements)
 		{
-			if (descriptor.mContext != parentElement.mContext)
+			if (descriptor.getContext() != parentElement.getContext())
 			{
 				throw new IllegalArgumentException("Parent descriptors don't belong to the same XmlContext");
 			}
