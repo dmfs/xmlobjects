@@ -366,7 +366,7 @@ public class ReflectionObjectBuilder<T> extends AbstractObjectBuilder<T>
 			if (fieldHolder.name != null)
 			{
 				@SuppressWarnings("unchecked")
-				ElementDescriptor<Object> childDescriptor = (ElementDescriptor<Object>) ElementDescriptor.get(fieldHolder.name, xmlContext);
+				ElementDescriptor<Object> childDescriptor = (ElementDescriptor<Object>) ElementDescriptor.get(fieldHolder.name, descriptor, xmlContext);
 
 				Class<?> fieldType = fieldHolder.field.getType();
 

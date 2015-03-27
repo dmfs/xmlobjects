@@ -164,7 +164,7 @@ public class SetObjectBuilder<T> extends AbstractObjectBuilder<Set<T>>
 				if (mSetElementDescriptor == null && element instanceof QualifiedName)
 				{
 					@SuppressWarnings("unchecked")
-					ElementDescriptor<T> childDescriptor = (ElementDescriptor<T>) ElementDescriptor.get((QualifiedName) element, xmlContext);
+					ElementDescriptor<T> childDescriptor = (ElementDescriptor<T>) ElementDescriptor.get((QualifiedName) element, descriptor, xmlContext);
 					childWriter.writeChild(childDescriptor, element, context);
 				}
 				else

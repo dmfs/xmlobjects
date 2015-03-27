@@ -95,7 +95,6 @@ public class ListObjectBuilder<T> extends AbstractObjectBuilder<List<T>>
 	}
 
 
-
 	public ListObjectBuilder(IObjectBuilder<T> listElementBuilder)
 	{
 		this(listElementBuilder, DEFAULT_INITIAL_CAPACITY, true);
@@ -169,7 +168,7 @@ public class ListObjectBuilder<T> extends AbstractObjectBuilder<List<T>>
 				if (mListElementDescriptor == null && element instanceof QualifiedName)
 				{
 					@SuppressWarnings("unchecked")
-					ElementDescriptor<T> childDescriptor = (ElementDescriptor<T>) ElementDescriptor.get((QualifiedName) element, xmlContext);
+					ElementDescriptor<T> childDescriptor = (ElementDescriptor<T>) ElementDescriptor.get((QualifiedName) element, descriptor, xmlContext);
 					childWriter.writeChild(childDescriptor, element, context);
 				}
 				else

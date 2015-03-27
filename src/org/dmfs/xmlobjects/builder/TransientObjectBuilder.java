@@ -94,7 +94,7 @@ public class TransientObjectBuilder<T> extends AbstractObjectBuilder<T>
 			if (mChildDescriptor == null && object instanceof QualifiedName)
 			{
 				@SuppressWarnings("unchecked")
-				ElementDescriptor<T> childDescriptor = (ElementDescriptor<T>) ElementDescriptor.get((QualifiedName) object, xmlContext);
+				ElementDescriptor<T> childDescriptor = (ElementDescriptor<T>) ElementDescriptor.get((QualifiedName) object, descriptor, xmlContext);
 				childWriter.writeChild(childDescriptor, object, context);
 			}
 			else
