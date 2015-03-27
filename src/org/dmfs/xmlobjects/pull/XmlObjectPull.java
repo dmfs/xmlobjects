@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 Marten Gajda <marten@dmfs.org>
+ * Copyright (C) 2015 Marten Gajda <marten@dmfs.org>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -203,7 +203,8 @@ public class XmlObjectPull
 				{
 					if (currentDepth < ignoreDepth)
 					{
-						ElementDescriptor<?> nextClass = ElementDescriptor.get(QualifiedName.get(parser.getNamespace(), parser.getName()), mContext);
+						ElementDescriptor<?> nextClass = ElementDescriptor.get(QualifiedName.get(parser.getNamespace(), parser.getName()),
+							currentElementDescriptor, mContext);
 						if (nextClass != null)
 						{
 							currentElementDescriptor = nextClass;
