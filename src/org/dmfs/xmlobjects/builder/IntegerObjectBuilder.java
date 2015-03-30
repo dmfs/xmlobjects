@@ -61,6 +61,11 @@ public class IntegerObjectBuilder extends AbstractObjectBuilder<Integer>
 	@Override
 	public Integer update(ElementDescriptor<Integer> descriptor, Integer object, String text, ParserContext context) throws XmlObjectPullParserException
 	{
+		if (text == null && !mStrict)
+		{
+			return null;
+		}
+
 		try
 		{
 			return Integer.parseInt(mStrict ? text : text.trim());

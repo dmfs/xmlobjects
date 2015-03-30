@@ -71,6 +71,11 @@ public class UriObjectBuilder extends AbstractObjectBuilder<URI>
 	@Override
 	public URI update(ElementDescriptor<URI> descriptor, URI object, String text, ParserContext context) throws XmlObjectPullParserException
 	{
+		if (text == null && !mStrict)
+		{
+			return null;
+		}
+
 		try
 		{
 			return new URI(mStrict ? text : text.trim());

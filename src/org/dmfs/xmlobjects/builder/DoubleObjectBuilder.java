@@ -61,6 +61,11 @@ public class DoubleObjectBuilder extends AbstractObjectBuilder<Double>
 	@Override
 	public Double update(ElementDescriptor<Double> descriptor, Double object, String text, ParserContext context) throws XmlObjectPullParserException
 	{
+		if (text == null && !mStrict)
+		{
+			return null;
+		}
+
 		try
 		{
 			return Double.parseDouble(mStrict ? text : text.trim());
