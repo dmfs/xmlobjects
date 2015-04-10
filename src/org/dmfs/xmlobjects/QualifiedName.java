@@ -148,4 +148,17 @@ public final class QualifiedName
 	{
 		return namespace == null ? name : namespace + ":" + name;
 	}
+
+
+	/**
+	 * Returns the qualified name in Clark notation.
+	 * 
+	 * @return A {@link String} representing the qualified name.
+	 * 
+	 * @see <a href="https://tools.ietf.org/html/draft-saintandre-json-namespaces-00">JavaScript Object Notation (JSON) Namespaces</a>
+	 */
+	public String toClarkString()
+	{
+		return namespace == null ? name : "{" + namespace + "}" + name;
+	}
 }
