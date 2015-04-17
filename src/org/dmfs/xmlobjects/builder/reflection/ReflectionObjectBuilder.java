@@ -19,6 +19,8 @@ package org.dmfs.xmlobjects.builder.reflection;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -293,6 +295,22 @@ public class ReflectionObjectBuilder<T> extends AbstractObjectBuilder<T>
 			else if (fieldType == URI.class)
 			{
 				field.set(object, new URI(value));
+			}
+			else if (Enum.class.isAssignableFrom(fieldType))
+			{
+				try
+				{
+					Method valueOf = fieldType.getMethod("valueOf", String.class);
+					field.set(object, valueOf.invoke(fieldType, value));
+				}
+				catch (NoSuchMethodException e)
+				{
+					// this should not happen, we've checked that fieldType is an enum
+				}
+				catch (InvocationTargetException e)
+				{
+					// this should not happen, we've checked that fieldType is an enum
+				}
 			}
 		}
 		catch (NumberFormatException e)
