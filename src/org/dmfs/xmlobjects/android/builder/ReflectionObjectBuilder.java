@@ -20,8 +20,8 @@ package org.dmfs.xmlobjects.android.builder;
 import java.lang.reflect.Field;
 import java.net.URI;
 
-import org.dmfs.xmlobjects.QualifiedName;
 import org.dmfs.xmlobjects.ElementDescriptor;
+import org.dmfs.xmlobjects.QualifiedName;
 import org.dmfs.xmlobjects.android.pull.AndroidParserContext;
 import org.dmfs.xmlobjects.android.pull.ResolveInt;
 import org.dmfs.xmlobjects.pull.ParserContext;
@@ -29,6 +29,7 @@ import org.dmfs.xmlobjects.pull.XmlObjectPullParserException;
 
 import android.content.res.Resources;
 import android.content.res.Resources.NotFoundException;
+import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Xml;
 
@@ -77,6 +78,18 @@ public class ReflectionObjectBuilder<T> extends org.dmfs.xmlobjects.builder.refl
 				else if (resources != null)
 				{
 					resultValue = resources.getString(res);
+				}
+
+			}
+			if (field.getType() == CharSequence.class)
+			{
+				if (res == 0)
+				{
+					resultValue = p.getAttributeValue(namespace, name);
+				}
+				else if (resources != null)
+				{
+					resultValue = resources.getText(res);
 				}
 
 			}
@@ -136,7 +149,47 @@ public class ReflectionObjectBuilder<T> extends org.dmfs.xmlobjects.builder.refl
 					resultValue = URI.create(uri);
 				}
 			}
+			else if (field.getType() == Uri.class)
+			{
+				String uri = null;
+				if (res == 0)
+				{
+					uri = p.getAttributeValue(namespace, name);
+				}
+				else if (resources != null)
+				{
+					uri = resources.getString(res);
+				}
 
+				if (uri != null)
+				{
+					resultValue = Uri.parse(uri);
+				}
+			}
+			else if (field.getType() == Class.class)
+			{
+				String className = null;
+				if (res == 0)
+				{
+					className = p.getAttributeValue(namespace, name);
+				}
+				else if (resources != null)
+				{
+					className = resources.getString(res);
+				}
+
+				if (className != null)
+				{
+					try
+					{
+						resultValue = Class.forName(className);
+					}
+					catch (ClassNotFoundException e)
+					{
+						resultValue = null;
+					}
+				}
+			}
 			if (resultValue != null)
 			{
 				field.setAccessible(true);
