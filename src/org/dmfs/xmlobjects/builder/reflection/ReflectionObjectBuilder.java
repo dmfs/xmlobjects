@@ -296,6 +296,20 @@ public class ReflectionObjectBuilder<T> extends AbstractObjectBuilder<T>
 			{
 				field.set(object, new URI(value));
 			}
+			else if (field.getType() == Class.class)
+			{
+				if (value != null)
+				{
+					try
+					{
+						field.set(object, Class.forName(value));
+					}
+					catch (ClassNotFoundException e)
+					{
+						// ignore
+					}
+				}
+			}
 			else if (Enum.class.isAssignableFrom(fieldType))
 			{
 				try
