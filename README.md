@@ -6,20 +6,18 @@ This library is meant to build an XML stream parser that allows memory efficient
 
 ## Key benefits
 
-* __On-the-fly processing__  
-Allows to process data right when it's parsed, e.g. after parsing a large binary BLOB you ca save it immedialtely to a file and free the memory before parsing the next one. There is no need to parse the enitre XML tree into memory before processing it.  
+* __On-the-fly processing__
+Allows to process data right when it's parsed, e.g. after parsing a large binary BLOB you ca save it immedialtely to a file and free the memory before parsing the next one. There is no need to parse the enitre XML tree into memory before processing it.
 Also allows to serialize data from arbitrary sources. There is no need to keep all the data in memory at the time you start the serializer as long as you can access each bit at the time it's being serialized.
-* __Object recycling__  
+* __Object recycling__
 Allows to recycle intermediate objects. When parsing long XML streams with repeating sub-tree patterns you can pull each pattern one by one, process it and reuse the parsed objects for the next pattern, giving the garbage collector less work to be done. You also can parse into objects that already exist.
-* __Support for arbitrary classes__  
-Allows to parse directly into objects of arbitrary (even foreign) classes, no need to create temporary POJOs or modify existing classes. As long as you're able to create an object and populate its fields you can parse XML into it.  
+* __Support for arbitrary classes__
+Allows to parse directly into objects of arbitrary (even foreign) classes, no need to create temporary POJOs or modify existing classes. As long as you're able to create an object and populate its fields you can parse XML into it.
 Also allows to serialize arbitrary objects. All you need to do is to write a simple serializer that knows how to serialize objects of a specific class.
 
 ## Requirements
 
 This code builds on top of an existing parser that implements the XmlPull interface, see http://www.xmlpull.org.
-
-To use the Android specific builders you need the Android SDK (any recent release should do).
 
 ## Builders
 

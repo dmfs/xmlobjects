@@ -23,14 +23,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.dmfs.xmlobjects.ElementDescriptor;
-import org.dmfs.xmlobjects.android.pull.AndroidParserContext;
 import org.dmfs.xmlobjects.builder.IObjectBuilder;
 import org.xmlpull.v1.XmlPullParser;
 
 
 /**
- * Represents the current context of the parser. Subclass this to provide additional information to {@link IObjectBuilder} instances. On Android use
- * {@link AndroidParserContext} to parse xml files with resource references.
+ * Represents the current context of the parser. Subclass this to provide additional information to {@link IObjectBuilder} instances.
  * 
  * @author Marten Gajda <marten@dmfs.org>
  */
