@@ -91,7 +91,11 @@
 
 	<target name="dist" depends="jar">
 		<!-- build the javadoc jar -->
-		<javadoc sourcepath="${src.dir}" destdir="${dist.dir}/javadoc" />
+		<javadoc sourcepath="${src.dir}" destdir="${dist.dir}/javadoc">
+			<classpath>
+				<path refid="classpath" />
+			</classpath>
+		</javadoc>
 
 		<jar jarfile="${javadoc-jar}" manifest="MANIFEST.MF">
 			<fileset dir="${dist.dir}/javadoc" />
